@@ -153,7 +153,7 @@ export function CreateHouseholdDialog({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className='w-full'>
                           <SelectValue placeholder='Chọn tỉnh/TP' />
                         </SelectTrigger>
                       </FormControl>
@@ -183,7 +183,7 @@ export function CreateHouseholdDialog({
                       disabled={!watchedProvince}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className='w-full'>
                           <SelectValue placeholder='Chọn phường/xã' />
                         </SelectTrigger>
                       </FormControl>

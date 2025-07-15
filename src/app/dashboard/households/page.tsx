@@ -12,18 +12,11 @@ export default async function HouseholdsPage() {
 
   const { data: households } = await supabase
     .from('households')
-    .select(
-      `
-      *,
-      head_of_household:family_members!households_head_of_household_id_fkey(
-        id,
-        full_name
-      ),
-      _count:family_members(count)
-    `
-    )
-    .eq('created_by', user?.id)
+    .select(`*`)
+    // .eq('created_by', user?.id)
     .order('created_at', { ascending: false });
+
+  console.log({ households });
 
   return (
     <div className='space-y-6'>
