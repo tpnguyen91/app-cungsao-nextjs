@@ -27,7 +27,17 @@ import {
   householdSchema,
   type HouseholdFormData
 } from '@/features/households/schemas/household-schema';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { createHousehold } from '@/features/households/actions/household-actions';
+import ProvinceData from '../../data/province.json';
+import WardData from '../../data/ward.json';
+import { IProvince, IWard } from '@/types';
 
 interface CreateHouseholdDialogProps {
   children: React.ReactNode;
@@ -49,6 +59,23 @@ export function CreateHouseholdDialog({
     }
   });
 
+  const watchedProvince = form.watch('province_id') as string;
+
+  const provinces = Object.keys(ProvinceData as Record<string, IProvince>).map(
+    (provinceCode: string) => ({
+      ...(ProvinceData as Record<string, IProvince>)[provinceCode]
+    })
+  );
+  const wardsData = watchedProvince
+    ? Object.keys(WardData)
+        .filter(
+          (k) =>
+            (WardData as Record<string, IWard>)[k].parent_code ===
+            watchedProvince
+        )
+        .map((ward) => ({ ...(WardData as Record<string, IWard>)[ward] }))
+    : [];
+
   const onSubmit = async (data: HouseholdFormData) => {
     try {
       await createHousehold(data);
@@ -65,6 +92,11 @@ export function CreateHouseholdDialog({
         description: error instanceof Error ? error.message : 'Có lỗi xảy ra'
       });
     }
+  };
+
+  const handleProvinceChange = (value: string) => {
+    form.setValue('province_id', value);
+    form.setValue('ward_id', '');
   };
 
   return (
@@ -109,6 +141,65 @@ export function CreateHouseholdDialog({
                 </FormItem>
               )}
             />
+            <div className='w-full flex-1'>
+              <FormField
+                control={form.control}
+                name='province_id'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tỉnh/Thành phố</FormLabel>
+                    <Select
+                      onValueChange={handleProvinceChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Chọn tỉnh/TP' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className='max-h-[200px] overflow-y-auto'>
+                        {provinces.map((province) => (
+                          <SelectItem key={province.code} value={province.code}>
+                            {province.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className='w-full flex-1'>
+              <FormField
+                control={form.control}
+                name='ward_id'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phường/Xã</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!watchedProvince}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder='Chọn phường/xã' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className='max-h-[200px] overflow-y-auto'>
+                        {wardsData.map((ward) => (
+                          <SelectItem key={ward.code} value={ward.code}>
+                            {ward.path_with_type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className='flex justify-end space-x-2'>
               <Button
                 type='button'
