@@ -103,20 +103,11 @@ export async function getHousehold(id: string) {
   }
 
   const { data: household, error } = await supabase
-    .from('households')
-    .select(
-      `
-      *,
-      head_of_household:family_members!households_head_of_household_id_fkey(
-        id,
-        full_name
-      ),
-      family_members(*)
-    `
-    )
-    .eq('id', id)
-    .eq('created_by', user.id)
-    .single();
+    .from('family_members')
+    .select(`*`)
+    .eq('household_id', id);
+  // .eq('created_by', user.id)
+  // .single();
 
   if (error) {
     throw new Error(`Không thể tải thông tin hộ gia đình: ${error.message}`);

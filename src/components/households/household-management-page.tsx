@@ -35,9 +35,18 @@ import {
 } from '@/lib/vietnam-data';
 import { getHousehold } from '@/features/households/actions/household-actions';
 import { useToast } from '@/hooks/use-toast';
-import type { Household } from '@/types/database';
+import type { FamilyMember, Household } from '@/types/database';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+
+interface IHouseHoldDetail {
+  familyMembers: Array<FamilyMember>;
+  id: string;
+  household_name: string;
+  address: string;
+  ward_id: number;
+  province: number;
+}
 
 interface HouseholdWithMembers extends Household {
   head_of_household?: {
@@ -59,12 +68,13 @@ export function HouseholdManagementPage({
   const [selectedHousehold, setSelectedHousehold] =
     useState<HouseholdWithMembers | null>(null);
   const [selectedHouseholdDetail, setSelectedHouseholdDetail] =
-    useState<any>(null);
+    useState<IHouseHoldDetail>();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedWard, setSelectedWard] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  console.log({ selectedHouseholdDetail });
 
   const provinces = getProvinces();
   const wards = selectedProvince ? getWardsByProvince(selectedProvince) : [];
@@ -91,7 +101,10 @@ export function HouseholdManagementPage({
 
     try {
       const detail = await getHousehold(household.id);
-      setSelectedHouseholdDetail(detail);
+      setSelectedHouseholdDetail({
+        ...selectedHouseholdDetail,
+        familyMembers: detail
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -314,7 +327,7 @@ function HouseholdDetailView({
   onDelete
 }: {
   household: HouseholdWithMembers;
-  householdDetail: any;
+  householdDetail: IHouseHoldDetail;
   loading: boolean;
   onUpdate: (household: HouseholdWithMembers) => void;
   onDelete: (id: string) => void;
@@ -376,39 +389,12 @@ function HouseholdDetailView({
           </div>
         </div>
       </div>
-
-      {/* Stats */}
-      <div className='border-b border-gray-200 bg-white p-6'>
-        <div className='grid grid-cols-3 gap-4'>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-blue-600'>
-              {householdDetail?.family_members?.length || 0}
-            </div>
-            <div className='text-sm text-gray-500'>Tổng thành viên</div>
-          </div>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-green-600'>
-              {householdDetail?.family_members?.filter((m: any) => m.is_alive)
-                .length || 0}
-            </div>
-            <div className='text-sm text-gray-500'>Còn sống</div>
-          </div>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-gray-600'>
-              {householdDetail?.family_members?.filter((m: any) => !m.is_alive)
-                .length || 0}
-            </div>
-            <div className='text-sm text-gray-500'>Đã mất</div>
-          </div>
-        </div>
-      </div>
-
       {/* Members table */}
       <div className='flex-1 overflow-auto bg-gray-50'>
         <div className='p-6'>
           {householdDetail && (
             <InlineFamilyMembersTable
-              members={householdDetail.family_members || []}
+              members={householdDetail.familyMembers || []}
               householdId={household.id}
             />
           )}
