@@ -1,6 +1,7 @@
 {
   "name": "next-shadcn-dashboard-starter",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "author": {
     "name": "Kiran",
