@@ -34,7 +34,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Save, X, Trash2, Crown, Plus } from 'lucide-react';
+import { Edit2, Save, X, Trash2, Crown, Plus, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   updateFamilyMember,
@@ -62,6 +62,7 @@ import {
 } from '@/lib/vietnam-data';
 import type { FamilyMember } from '@/types/database';
 import { z } from 'zod';
+import { MemberDetailDrawer } from './member-detail-drawer';
 
 // Extended schema for inline editing with all required fields
 const inlineEditSchema = z.object({
@@ -96,6 +97,10 @@ export function InlineFamilyMembersTable({
   const [editingMembers, setEditingMembers] =
     useState<EditingMember[]>(members);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
+    null
+  );
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { toast } = useToast();
 
   // Start editing a member
@@ -182,6 +187,23 @@ export function InlineFamilyMembersTable({
     }
   };
 
+  // Open member detail drawer
+  const openMemberDetail = (member: FamilyMember) => {
+    setSelectedMember(member);
+    setIsDrawerOpen(true);
+  };
+
+  // Update member from drawer
+  const updateMemberFromDrawer = (updatedMember: FamilyMember) => {
+    setEditingMembers((prev) =>
+      prev.map((member) =>
+        member.id === updatedMember.id
+          ? { ...updatedMember, isEditing: false }
+          : member
+      )
+    );
+  };
+
   // Add new member
   const addNewMember = async (data: InlineEditFormData) => {
     try {
@@ -245,7 +267,7 @@ export function InlineFamilyMembersTable({
               <TableHead>Tỉnh/TP</TableHead>
               <TableHead>Phường/Xã</TableHead>
               <TableHead>Chủ hộ</TableHead>
-              <TableHead className='w-[120px]'>Thao tác</TableHead>
+              <TableHead className='w-[160px]'>Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -287,6 +309,7 @@ export function InlineFamilyMembersTable({
                       member={member}
                       onEdit={() => startEdit(member.id)}
                       onDelete={(name) => deleteMember(member.id, name)}
+                      onViewDetail={() => openMemberDetail(member)}
                     />
                   )}
                 </TableRow>
@@ -295,6 +318,14 @@ export function InlineFamilyMembersTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Member Detail Drawer */}
+      <MemberDetailDrawer
+        member={selectedMember}
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onUpdate={updateMemberFromDrawer}
+      />
     </div>
   );
 }
@@ -622,11 +653,13 @@ function EditableMemberRow({
 function ReadOnlyMemberRow({
   member,
   onEdit,
-  onDelete
+  onDelete,
+  onViewDetail
 }: {
   member: FamilyMember;
   onEdit: () => void;
   onDelete: (name: string) => void;
+  onViewDetail: () => void;
 }) {
   const getLocationDisplay = () => {
     const parts = [];
@@ -685,6 +718,15 @@ function ReadOnlyMemberRow({
       </TableCell>
       <TableCell>
         <div className='flex space-x-1'>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={onViewDetail}
+            className='hover:bg-blue-50'
+            title='Xem chi tiết'
+          >
+            <Eye className='h-4 w-4' />
+          </Button>
           <Button size='sm' variant='outline' onClick={onEdit}>
             <Edit2 className='h-4 w-4' />
           </Button>

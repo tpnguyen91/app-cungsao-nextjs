@@ -26,22 +26,26 @@ const sidebarItems = [
   {
     href: '/dashboard',
     label: 'Trang chủ',
-    icon: HiHome
+    icon: HiHome,
+    enable: false
   },
   {
     href: '/dashboard/households',
     label: 'Hộ gia đình',
-    icon: HiUsers
+    icon: HiUsers,
+    enable: true
   },
   {
     href: '/dashboard/worship',
     label: 'Lịch cúng',
-    icon: HiCalendar
+    icon: HiCalendar,
+    enable: false
   },
   {
     href: '/dashboard/settings',
     label: 'Cài đặt',
-    icon: HiCog
+    icon: HiCog,
+    enable: false
   }
 ];
 
@@ -70,7 +74,7 @@ export function FlowbiteDashboardLayout({
   return (
     <div className='flex h-screen bg-gray-50 dark:bg-gray-900'>
       {/* Sidebar */}
-      <div
+      {/* <div
         className={`${sidebarOpen ? 'block' : 'hidden'} fixed inset-0 z-50 md:relative md:inset-auto md:block`}
       >
         <div className='flex h-full'>
@@ -84,7 +88,7 @@ export function FlowbiteDashboardLayout({
                 </div>
                 <Sidebar.Items>
                   <Sidebar.ItemGroup>
-                    {sidebarItems.map((item) => (
+                    {sidebarItems.filter(item => item.enable).map((item) => (
                       <Sidebar.Item
                         key={item.href}
                         href={item.href}
@@ -107,12 +111,12 @@ export function FlowbiteDashboardLayout({
             />
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Main content */}
       <div className='flex flex-1 flex-col overflow-hidden'>
         {/* Top navbar */}
-        <Navbar className='border-b border-gray-200 dark:border-gray-700'>
+        {/* <Navbar className='border-b border-gray-200 dark:border-gray-700'>
           <div className='flex items-center'>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -154,7 +158,7 @@ export function FlowbiteDashboardLayout({
               </Dropdown.Item>
             </Dropdown>
           </div>
-        </Navbar>
+        </Navbar> */}
 
         {/* Page content */}
         <main className='flex-1 overflow-y-auto p-6'>{children}</main>

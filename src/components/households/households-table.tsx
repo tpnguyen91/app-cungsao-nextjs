@@ -34,6 +34,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
   MoreHorizontal,
   Edit,
   Trash2,
@@ -41,13 +48,18 @@ import {
   Eye,
   ArrowUpDown,
   Search,
-  Filter
+  Filter,
+  MapPin,
+  Phone,
+  X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import Link from 'next/link';
 import { EditHouseholdDialog } from './edit-household-dialog';
 import { DeleteHouseholdDialog } from './delete-household-dialog';
+import { useHouseholdNavigation } from '@/hooks/use-household-navigation';
+import { URL_GIA_DINH_DETAIL } from '@/constants/url';
 
 export interface Household {
   id: string;
@@ -55,6 +67,7 @@ export interface Household {
   address: string;
   province_id?: string;
   ward_id?: string;
+  phone?: string;
   created_at: string;
   head_of_household?: {
     id: string;
@@ -74,11 +87,75 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [globalFilter, setGlobalFilter] = React.useState('');
+  const [searchText, setSearchText] = React.useState('');
+  const [provinceFilter, setProvinceFilter] = React.useState<string>('');
+  const [wardFilter, setWardFilter] = React.useState<string>('');
+  const { openHouseholdDrawer } = useHouseholdNavigation();
 
   const getMemberCount = (household: Household) => {
     return household._count?.[0]?.count || 0;
   };
+
+  // Get unique provinces and wards
+  const uniqueProvinces = React.useMemo(() => {
+    const provinces = households
+      .map((h) => h.province_id)
+      .filter(Boolean)
+      .filter((value, index, self) => self.indexOf(value) === index);
+    return provinces;
+  }, [households]);
+
+  const uniqueWards = React.useMemo(() => {
+    const wards = households
+      .filter((h) => !provinceFilter || h.province_id === provinceFilter)
+      .map((h) => h.ward_id)
+      .filter(Boolean)
+      .filter((value, index, self) => self.indexOf(value) === index);
+    return wards;
+  }, [households, provinceFilter]);
+
+  // Apply filters
+  const filteredData = React.useMemo(() => {
+    return households.filter((household) => {
+      // Search text filter
+      if (searchText) {
+        const searchableText = [
+          household.household_name,
+          household.head_of_household?.full_name,
+          household.phone
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        if (!searchableText.includes(searchText.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Province filter
+      if (provinceFilter && household.province_id !== provinceFilter) {
+        return false;
+      }
+
+      // Ward filter
+      if (wardFilter && household.ward_id !== wardFilter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [households, searchText, provinceFilter, wardFilter]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchText('');
+    setProvinceFilter('');
+    setWardFilter('');
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchText || provinceFilter || wardFilter;
 
   const columns: ColumnDef<Household>[] = [
     {
@@ -187,22 +264,20 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
             <DropdownMenuContent align='end'>
               <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => openHouseholdDrawer(household.id)}
+                className='flex cursor-pointer items-center'
+              >
+                <Users className='mr-2 h-4 w-4' />
+                Xem thành viên
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/dashboard/households/${household.id}`}
+                  href={URL_GIA_DINH_DETAIL(household.id)}
                   className='flex items-center'
                 >
                   <Eye className='mr-2 h-4 w-4' />
                   Xem chi tiết
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/dashboard/households/${household.id}/members`}
-                  className='flex items-center'
-                >
-                  <Users className='mr-2 h-4 w-4' />
-                  Quản lý thành viên
                 </Link>
               </DropdownMenuItem>
               <EditHouseholdDialog household={household}>
@@ -232,7 +307,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
   ];
 
   const table = useReactTable({
-    data: households,
+    data: filteredData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -241,13 +316,10 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: 'includesString',
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
-      globalFilter
+      columnVisibility
     },
     initialState: {
       pagination: {
@@ -258,30 +330,131 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
 
   return (
     <div className='space-y-4'>
-      {/* Toolbar */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center space-x-2'>
-          <div className='relative'>
-            <Search className='text-muted-foreground absolute top-2.5 left-2 h-4 w-4' />
-            <Input
-              placeholder='Tìm kiếm hộ gia đình...'
-              value={globalFilter ?? ''}
-              onChange={(event) => setGlobalFilter(String(event.target.value))}
-              className='max-w-sm pl-8'
-            />
+      {/* Search and Filters */}
+      <div className='space-y-4'>
+        {/* Search and Filters Row */}
+        <div className='flex flex-col gap-4 sm:flex-row'>
+          {/* Search by Name/Phone */}
+          <div className='flex'>
+            <div className='relative w-[450px]'>
+              <Search className='text-muted-foreground absolute top-2.5 left-2 h-4 w-4' />
+              <Input
+                placeholder='Tìm kiếm theo tên hộ gia đình, chủ hộ, số điện thoại...'
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+                className='max-w-md pl-8'
+              />
+              {searchText && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='absolute top-1 right-1 h-6 w-6 p-0'
+                  onClick={() => setSearchText('')}
+                >
+                  <X className='h-3 w-3' />
+                </Button>
+              )}
+            </div>
           </div>
-          <Button
-            variant='outline'
-            size='sm'
-            className='border-pink-200 text-pink-700 hover:bg-pink-50'
-          >
-            <Filter className='mr-2 h-4 w-4' />
-            Bộ lọc
-          </Button>
+
+          {/* Location Filters */}
+          <div className='flex gap-2'>
+            <Select value={provinceFilter} onValueChange={setProvinceFilter}>
+              <SelectTrigger className='w-[250px]'>
+                <MapPin className='mr-2 h-4 w-4' />
+                <SelectValue placeholder='Chọn tỉnh/thành phố' />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueProvinces.map((province) => (
+                  <SelectItem key={province} value={province}>
+                    {province}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={wardFilter}
+              onValueChange={setWardFilter}
+              disabled={!provinceFilter}
+            >
+              <SelectTrigger className='w-[250px]'>
+                <MapPin className='mr-2 h-4 w-4' />
+                <SelectValue placeholder='Chọn phường/xã' />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueWards.map((ward) => (
+                  <SelectItem key={ward} value={ward}>
+                    {ward}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className='text-muted-foreground text-sm'>
-          {table.getFilteredRowModel().rows.length} / {households.length} hộ gia
-          đình
+
+        {/* Filter Actions and Results */}
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            {hasActiveFilters && (
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={clearFilters}
+                className='text-muted-foreground hover:text-foreground'
+              >
+                <X className='mr-2 h-4 w-4' />
+                Xóa bộ lọc
+              </Button>
+            )}
+
+            {/* Active filter badges */}
+            <div className='flex gap-1'>
+              {searchText && (
+                <Badge variant='secondary' className='text-xs'>
+                  Tìm kiếm: "{searchText}"
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='ml-1 h-3 w-3 p-0'
+                    onClick={() => setSearchText('')}
+                  >
+                    <X className='h-2 w-2' />
+                  </Button>
+                </Badge>
+              )}
+              {provinceFilter && (
+                <Badge variant='secondary' className='text-xs'>
+                  Tỉnh: {provinceFilter}
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='ml-1 h-3 w-3 p-0'
+                    onClick={() => setProvinceFilter('')}
+                  >
+                    <X className='h-2 w-2' />
+                  </Button>
+                </Badge>
+              )}
+              {wardFilter && (
+                <Badge variant='secondary' className='text-xs'>
+                  Phường/Xã: {wardFilter}
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='ml-1 h-3 w-3 p-0'
+                    onClick={() => setWardFilter('')}
+                  >
+                    <X className='h-2 w-2' />
+                  </Button>
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className='text-muted-foreground text-sm'>
+            {filteredData.length} / {households.length} hộ gia đình
+          </div>
         </div>
       </div>
 
@@ -330,15 +503,12 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                   colSpan={columns.length}
                   className='text-muted-foreground h-24 text-center'
                 >
-                  {globalFilter ? (
+                  {hasActiveFilters ? (
                     <div>
-                      <p>
-                        Không tìm thấy hộ gia đình nào với từ khóa "
-                        {globalFilter}"
-                      </p>
+                      <p>Không tìm thấy hộ gia đình nào phù hợp với bộ lọc</p>
                       <Button
                         variant='link'
-                        onClick={() => setGlobalFilter('')}
+                        onClick={clearFilters}
                         className='mt-2 text-pink-600 hover:text-pink-700'
                       >
                         Xóa bộ lọc

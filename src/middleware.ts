@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { URL_AUTH, URL_AUTH_SIGN_IN, URL_GIA_DINH } from './constants/url';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -34,13 +35,8 @@ export async function middleware(request: NextRequest) {
     data: { user }
   } = await supabase.auth.getUser();
 
-  // Allow access to test-connection without auth
-  if (request.nextUrl.pathname.startsWith('/test-connection')) {
-    return supabaseResponse;
-  }
-
   // Protected routes - require authentication
-  const protectedRoutes = ['/dashboard'];
+  const protectedRoutes = [URL_GIA_DINH];
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
@@ -48,21 +44,21 @@ export async function middleware(request: NextRequest) {
   // If no user and trying to access protected routes, redirect to signin
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/auth/signin';
+    url.pathname = URL_AUTH_SIGN_IN;
     return NextResponse.redirect(url);
   }
 
   // If user exists and trying to access auth pages, redirect to dashboard
-  if (user && request.nextUrl.pathname.startsWith('/auth')) {
+  if (user && request.nextUrl.pathname.startsWith(URL_AUTH)) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = URL_GIA_DINH;
     return NextResponse.redirect(url);
   }
 
   // Redirect root to dashboard if authenticated, signin if not
   if (request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone();
-    url.pathname = user ? '/dashboard' : '/auth/signin';
+    url.pathname = user ? URL_GIA_DINH : URL_AUTH_SIGN_IN;
     return NextResponse.redirect(url);
   }
 
