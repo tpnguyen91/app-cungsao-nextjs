@@ -1,10 +1,8 @@
+import { HouseholdDrawerManager } from '@/components/households/household-drawer-manager';
+import { FlowbiteDashboardLayout } from '@/components/layout/flowbite-dashboard-layout';
+import { URL_AUTH_SIGN_IN } from '@/constants/url';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { DashboardNav } from '@/components/layout/dashboard-nav';
-import { UserNav } from '@/components/layout/user-nav';
-import { FlowbiteDashboardLayout } from '@/components/layout/flowbite-dashboard-layout';
-import { HouseholdDrawerManager } from '@/components/households/household-drawer-manager';
-import { URL_AUTH_SIGN_IN } from '@/constants/url';
 
 export default async function DashboardLayout({
   children

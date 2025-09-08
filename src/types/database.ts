@@ -48,6 +48,7 @@ export interface Database {
           is_alive: boolean;
           notes: string | null;
           province_code: string | null;
+          dharma_name?: string;
           ward_code: string | null;
           created_at: string;
           updated_at: string;
@@ -56,6 +57,7 @@ export interface Database {
           id?: string;
           household_id: string;
           full_name: string;
+          dharma_name?: string;
           birth_year: number;
           hometown?: string | null;
           relationship_role: string;
@@ -72,6 +74,7 @@ export interface Database {
           id?: string;
           household_id?: string;
           full_name?: string;
+          dharma_name?: string;
           birth_year?: number;
           hometown?: string | null;
           relationship_role?: string;

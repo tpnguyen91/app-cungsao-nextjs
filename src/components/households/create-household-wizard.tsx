@@ -1,19 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -21,30 +16,25 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import {
-  Home,
-  Users,
-  User,
-  MapPin,
-  Phone,
-  Calendar,
-  CheckCircle,
-  ArrowLeft,
-  ArrowRight,
-  Loader2
-} from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { createHouseholdWithHead } from '@/lib/household-operations-fixed';
 import { getProvinces, getWardsByProvince } from '@/lib/vietnam-data';
-import type {
-  CreateHouseholdData,
-  CreateHeadOfHouseholdData,
-  HouseholdWizardState,
-  Household,
-  FamilyMember
-} from '@/types/household';
+import type { FamilyMember, Household } from '@/types/household';
 import { Gender } from '@/types/household';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  Home,
+  Loader2,
+  MapPin,
+  User
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 // Validation schemas
 const householdSchema = z.object({
@@ -136,7 +126,7 @@ export function CreateHouseholdWizard({
     : [];
 
   // Auto-fill head hometown when useSameAddress changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (useSameAddress && householdData) {
       headForm.setValue('hometown_address', householdData.address);
       headForm.setValue('hometown_province_code', householdData.province_code);
@@ -212,57 +202,59 @@ export function CreateHouseholdWizard({
     setCurrentStep(1);
   };
 
-  const renderProgressIndicator = () => (
-    <div className='mb-6 flex items-center justify-center'>
-      <div className='flex items-center space-x-4'>
-        {/* Step 1 */}
-        <div className='flex items-center'>
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${
-              currentStep >= 1
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-500'
-            }`}
-          >
-            {currentStep > 1 ? <CheckCircle className='h-4 w-4' /> : '1'}
+  const renderProgressIndicator = () => {
+    return (
+      <div className='mb-6 flex items-center justify-center'>
+        <div className='flex items-center space-x-4'>
+          {/* Step 1 */}
+          <div className='flex items-center'>
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                currentStep >= 1
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-500'
+              }`}
+            >
+              {currentStep > 1 ? <CheckCircle className='h-4 w-4' /> : '1'}
+            </div>
+            <span className='ml-2 text-sm font-medium'>Thông tin hộ</span>
           </div>
-          <span className='ml-2 text-sm font-medium'>Thông tin hộ</span>
-        </div>
 
-        <div className='h-0.5 w-8 bg-gray-300'></div>
+          <div className='h-0.5 w-8 bg-gray-300'></div>
 
-        {/* Step 2 */}
-        <div className='flex items-center'>
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${
-              currentStep >= 2
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-500'
-            }`}
-          >
-            {currentStep > 2 ? <CheckCircle className='h-4 w-4' /> : '2'}
+          {/* Step 2 */}
+          <div className='flex items-center'>
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                currentStep >= 2
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-500'
+              }`}
+            >
+              {currentStep > 2 ? <CheckCircle className='h-4 w-4' /> : '2'}
+            </div>
+            <span className='ml-2 text-sm font-medium'>Thông tin chủ hộ</span>
           </div>
-          <span className='ml-2 text-sm font-medium'>Thông tin chủ hộ</span>
-        </div>
 
-        <div className='h-0.5 w-8 bg-gray-300'></div>
+          <div className='h-0.5 w-8 bg-gray-300'></div>
 
-        {/* Step 3 */}
-        <div className='flex items-center'>
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${
-              currentStep >= 3
-                ? 'bg-green-500 text-white'
-                : 'bg-gray-200 text-gray-500'
-            }`}
-          >
-            {currentStep >= 3 ? <CheckCircle className='h-4 w-4' /> : '3'}
+          {/* Step 3 */}
+          <div className='flex items-center'>
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                currentStep >= 3
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-500'
+              }`}
+            >
+              {currentStep >= 3 ? <CheckCircle className='h-4 w-4' /> : '3'}
+            </div>
+            <span className='ml-2 text-sm font-medium'>Hoàn thành</span>
           </div>
-          <span className='ml-2 text-sm font-medium'>Hoàn thành</span>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

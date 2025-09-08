@@ -3,11 +3,10 @@
 
 import { createClient } from '@/lib/supabase/client';
 import type {
-  CreateHouseholdData,
   CreateHeadOfHouseholdData,
-  Household,
-  FamilyMember,
-  CreateHouseholdResponse
+  CreateHouseholdData,
+  CreateHouseholdResponse,
+  Household
 } from '@/types/household';
 
 const supabase = createClient();
@@ -38,7 +37,7 @@ export async function createHouseholdWithHead(
         hometown_address: headData.hometown_address,
         hometown_province_code: headData.hometown_province_code,
         hometown_ward_code: headData.hometown_ward_code,
-        relationship_role: 'CHU_HO',
+        relationship_role: null,
         is_head_of_household: true,
         is_alive: true,
         notes: headData.notes || null

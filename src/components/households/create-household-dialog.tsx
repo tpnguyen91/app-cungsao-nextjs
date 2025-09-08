@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { CreateHouseholdWizard } from './create-household-wizard';
-import type { Household, FamilyMember } from '@/types/household';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
+import type { FamilyMember, Household } from '@/types/household';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { CreateHouseholdWizard } from './create-household-wizard';
 
 interface CreateHouseholdDialogProps {
   children: React.ReactNode;

@@ -1,24 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  X,
-  User,
-  MapPin,
-  Calendar,
-  Users,
-  Phone,
-  Mail,
-  Edit2,
-  Save,
-  Crown
-} from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -26,27 +11,40 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { updateFamilyMember } from '@/features/family-members/actions/family-member-actions';
 import {
   type FamilyMemberFormData,
-  RelationshipRole,
   Gender,
-  RELATIONSHIP_OPTIONS,
-  GENDER_OPTIONS,
-  RELATIONSHIP_LABELS,
   GENDER_LABELS,
-  getRelationshipLabel,
+  GENDER_OPTIONS,
   getGenderLabel,
-  getRelationshipColor
+  getRelationshipColor,
+  getRelationshipLabel,
+  RELATIONSHIP_LABELS,
+  RELATIONSHIP_OPTIONS,
+  RelationshipRole
 } from '@/features/family-members/schemas/family-member-schema';
+import { useToast } from '@/hooks/use-toast';
 import {
-  getProvinces,
-  getWardsByProvince,
   getProvinceByCode,
-  getWardByCode
+  getProvinces,
+  getWardByCode,
+  getWardsByProvince
 } from '@/lib/vietnam-data';
 import type { FamilyMember } from '@/types/database';
+import {
+  Calendar,
+  Crown,
+  Edit2,
+  MapPin,
+  Save,
+  User,
+  Users,
+  X
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface MemberDetailDrawerProps {
   member: FamilyMember | null;

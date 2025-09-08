@@ -48,23 +48,24 @@ export const familyMemberSchema = z.object({
     .string()
     .min(2, 'Họ tên phải có ít nhất 2 ký tự')
     .max(255, 'Họ tên không được quá 255 ký tự'),
+  dharma_name: z.string().optional(),
   birth_year: z
     .number()
     .min(1900, 'Năm sinh không hợp lệ')
     .max(new Date().getFullYear(), 'Năm sinh không được lớn hơn năm hiện tại'),
-  hometown: z.string().max(255, 'Quê quán không được quá 255 ký tự').optional(),
-  relationship_role: z.nativeEnum(RelationshipRole, {
-    required_error: 'Vui lòng chọn mối quan hệ'
-  }),
+  // hometown: z.string().max(255, 'Quê quán không được quá 255 ký tự').optional(),
+  // relationship_role: z.nativeEnum(RelationshipRole, {
+  //   required_error: 'Vui lòng chọn mối quan hệ'
+  // }),
   gender: z.nativeEnum(Gender, {
     required_error: 'Vui lòng chọn giới tính'
   }),
   is_head_of_household: z.boolean().default(false),
-  is_alive: z.boolean().default(true),
-  notes: z.string().max(1000, 'Ghi chú không được quá 1000 ký tự').optional(),
+  is_alive: z.boolean().default(true)
+  // notes: z.string().max(1000, 'Ghi chú không được quá 1000 ký tự').optional(),
   // Add location fields
-  province_id: z.string().optional(),
-  ward_id: z.string().optional()
+  // province_id: z.string().optional(),
+  // ward_id: z.string().optional()
 });
 
 export type FamilyMemberFormData = z.infer<typeof familyMemberSchema>;

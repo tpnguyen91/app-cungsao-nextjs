@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -15,19 +17,18 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Mail, Lock, Home } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { URL_GIA_DINH } from '@/constants/url';
 import {
   signInSchema,
   type SignInFormData
 } from '@/features/auth/schemas/auth-schema';
+import { createClient } from '@/lib/supabase/client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Home, Lock, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +56,7 @@ export default function SignInPage() {
       if (error) {
         setError(error.message);
       } else {
-        router.push('/dashboard');
+        router.push(URL_GIA_DINH);
         router.refresh();
       }
     } catch (err) {

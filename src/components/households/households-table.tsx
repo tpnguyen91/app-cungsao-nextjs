@@ -1,27 +1,8 @@
-// File: src/components/households/households-table.tsx - TANSTACK VERSION
+// File: src/components/households/households-table.tsx - STYLED VERSION
 'use client';
 
-import React from 'react';
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState
-} from '@tanstack/react-table';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,9 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -41,25 +20,47 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import {
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Users,
-  Eye,
-  ArrowUpDown,
-  Search,
-  Filter,
-  MapPin,
-  Phone,
-  X
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import { URL_GIA_DINH_DETAIL } from '@/constants/url';
+import { useHouseholdNavigation } from '@/hooks/use-household-navigation';
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  VisibilityState
+} from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import {
+  ArrowUpDown,
+  Calendar,
+  Edit,
+  Eye,
+  Home,
+  MapPin,
+  MoreHorizontal,
+  Phone,
+  Search,
+  Trash2,
+  Users,
+  X
+} from 'lucide-react';
 import Link from 'next/link';
-import { EditHouseholdDialog } from './edit-household-dialog';
+import React from 'react';
 import { DeleteHouseholdDialog } from './delete-household-dialog';
-import { useHouseholdNavigation } from '@/hooks/use-household-navigation';
-import { URL_GIA_DINH_DETAIL } from '@/constants/url';
+import { EditHouseholdDialog } from './edit-household-dialog';
 
 export interface Household {
   id: string;
@@ -73,7 +74,7 @@ export interface Household {
     id: string;
     full_name: string;
   };
-  _count?: { count: number }[];
+  member_count?: number;
 }
 
 interface HouseholdsTableProps {
@@ -93,7 +94,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
   const { openHouseholdDrawer } = useHouseholdNavigation();
 
   const getMemberCount = (household: Household) => {
-    return household._count?.[0]?.count || 0;
+    return household?.member_count || 0;
   };
 
   // Get unique provinces and wards
@@ -165,49 +166,63 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
           <Button
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2 hover:bg-pink-50 hover:text-pink-700'
+            className='h-8 px-2 font-semibold hover:bg-pink-50 hover:text-pink-700'
           >
+            <Home className='mr-2 h-4 w-4' />
             Tên hộ gia đình
             <ArrowUpDown className='ml-2 h-4 w-4' />
           </Button>
         );
       },
       cell: ({ row }) => (
-        <div className='font-medium'>{row.getValue('household_name')}</div>
-      )
-    },
-    {
-      accessorKey: 'address',
-      header: 'Địa chỉ',
-      cell: ({ row }) => (
-        <div className='max-w-xs truncate' title={row.getValue('address')}>
-          {row.getValue('address')}
+        <div className='space-y-1'>
+          <div className='font-semibold text-gray-900 transition-colors group-hover:text-pink-700'>
+            {row.getValue('household_name')}
+          </div>
+          {row.original.head_of_household && (
+            <div className='text-muted-foreground flex items-center text-xs'>
+              <Users className='mr-1 h-3 w-3' />
+              Chủ hộ: {row.original.head_of_household.full_name}
+            </div>
+          )}
         </div>
       )
     },
     {
-      accessorKey: 'head_of_household',
-      header: 'Chủ hộ',
-      cell: ({ row }) => {
-        const headOfHousehold = row.getValue(
-          'head_of_household'
-        ) as Household['head_of_household'];
-        return headOfHousehold ? (
-          <Badge variant='secondary'>{headOfHousehold.full_name}</Badge>
-        ) : (
-          <span className='text-muted-foreground text-sm'>Chưa chọn</span>
-        );
-      }
+      accessorKey: 'address',
+      header: () => (
+        <div className='flex items-center font-semibold'>
+          <MapPin className='mr-2 h-4 w-4' />
+          Địa chỉ
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className='space-y-1'>
+          <div
+            className='max-w-xs truncate text-sm text-gray-900'
+            title={row.getValue('address')}
+          >
+            {row.getValue('address')}
+          </div>
+          {row.original.phone && (
+            <div className='text-muted-foreground flex items-center text-xs'>
+              <Phone className='mr-1 h-3 w-3' />
+              {row.original.phone}
+            </div>
+          )}
+        </div>
+      )
     },
     {
-      accessorKey: '_count',
+      accessorKey: 'member_count',
       header: ({ column }) => {
         return (
           <Button
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2'
+            className='h-8 px-2 font-semibold'
           >
+            <Users className='mr-2 h-4 w-4' />
             Thành viên
             <ArrowUpDown className='ml-2 h-4 w-4' />
           </Button>
@@ -216,9 +231,27 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
       cell: ({ row }) => {
         const count = getMemberCount(row.original);
         return (
-          <Badge variant='outline' className='font-mono'>
-            {count} thành viên
-          </Badge>
+          <div className='flex items-center space-x-2'>
+            <Badge
+              variant={count > 0 ? 'default' : 'secondary'}
+              className={`px-3 py-1 font-mono text-xs ${
+                count > 0
+                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                  : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              <Users className='mr-1 h-3 w-3' />
+              {count} {count === 1 ? 'người' : 'người'}
+            </Badge>
+            {count > 5 && (
+              <Badge
+                variant='secondary'
+                className='bg-blue-100 px-2 py-1 text-xs text-blue-800'
+              >
+                Đông
+              </Badge>
+            )}
+          </div>
         );
       },
       sortingFn: (rowA, rowB) => {
@@ -234,73 +267,123 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
           <Button
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2'
+            className='h-8 px-2 font-semibold'
           >
+            <Calendar className='mr-2 h-4 w-4' />
             Ngày tạo
             <ArrowUpDown className='ml-2 h-4 w-4' />
           </Button>
         );
       },
       cell: ({ row }) => {
-        return format(new Date(row.getValue('created_at')), 'dd/MM/yyyy', {
-          locale: vi
-        });
+        const date = new Date(row.getValue('created_at'));
+        const isRecent = Date.now() - date.getTime() < 7 * 24 * 60 * 60 * 1000; // 7 days
+
+        return (
+          <div className='space-y-1'>
+            <div className='text-sm font-medium text-gray-900'>
+              {format(date, 'dd/MM/yyyy', { locale: vi })}
+            </div>
+            <div className='text-muted-foreground flex items-center text-xs'>
+              <Calendar className='mr-1 h-3 w-3' />
+              {format(date, 'HH:mm', { locale: vi })}
+              {isRecent && (
+                <Badge
+                  variant='secondary'
+                  className='ml-2 bg-green-100 px-2 py-0 text-xs text-green-800'
+                >
+                  Mới
+                </Badge>
+              )}
+            </div>
+          </div>
+        );
       }
     },
     {
       id: 'actions',
-      header: 'Thao tác',
+      header: () => <div className='text-center font-semibold'>Thao tác</div>,
       cell: ({ row }) => {
         const household = row.original;
 
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='ghost' className='h-8 w-8 p-0'>
-                <span className='sr-only'>Open menu</span>
-                <MoreHorizontal className='h-4 w-4' />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => openHouseholdDrawer(household.id)}
-                className='flex cursor-pointer items-center'
-              >
-                <Users className='mr-2 h-4 w-4' />
-                Xem thành viên
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={URL_GIA_DINH_DETAIL(household.id)}
-                  className='flex items-center'
+          <div className='flex items-center justify-center'>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant='ghost'
+                  className='h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-pink-50'
                 >
-                  <Eye className='mr-2 h-4 w-4' />
-                  Xem chi tiết
-                </Link>
-              </DropdownMenuItem>
-              <EditHouseholdDialog household={household}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <Edit className='mr-2 h-4 w-4' />
-                  Chỉnh sửa
-                </DropdownMenuItem>
-              </EditHouseholdDialog>
-              <DropdownMenuSeparator />
-              <DeleteHouseholdDialog
-                householdId={household.id}
-                householdName={household.household_name}
-              >
+                  <span className='sr-only'>Open menu</span>
+                  <MoreHorizontal className='h-4 w-4' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end' className='w-56'>
+                <DropdownMenuLabel className='text-sm font-semibold text-gray-900'>
+                  Thao tác cho "{household.household_name}"
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className='text-red-600 focus:text-red-600'
-                  onSelect={(e) => e.preventDefault()}
+                  onClick={() => openHouseholdDrawer(household.id)}
+                  className='flex cursor-pointer items-center hover:bg-pink-50 hover:text-pink-700'
                 >
-                  <Trash2 className='mr-2 h-4 w-4' />
-                  Xóa
+                  <Users className='mr-2 h-4 w-4' />
+                  <div>
+                    <div className='font-medium'>Xem thành viên</div>
+                    <div className='text-muted-foreground text-xs'>
+                      Quản lý {getMemberCount(household)} thành viên
+                    </div>
+                  </div>
                 </DropdownMenuItem>
-              </DeleteHouseholdDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={URL_GIA_DINH_DETAIL(household.id)}
+                    className='flex items-center hover:bg-blue-50 hover:text-blue-700'
+                  >
+                    <Eye className='mr-2 h-4 w-4' />
+                    <div>
+                      <div className='font-medium'>Xem chi tiết</div>
+                      <div className='text-muted-foreground text-xs'>
+                        Thông tin đầy đủ
+                      </div>
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+                <EditHouseholdDialog household={household}>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className='hover:bg-amber-50 hover:text-amber-700'
+                  >
+                    <Edit className='mr-2 h-4 w-4' />
+                    <div>
+                      <div className='font-medium'>Chỉnh sửa</div>
+                      <div className='text-muted-foreground text-xs'>
+                        Cập nhật thông tin
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                </EditHouseholdDialog>
+                <DropdownMenuSeparator />
+                <DeleteHouseholdDialog
+                  householdId={household.id}
+                  householdName={household.household_name}
+                >
+                  <DropdownMenuItem
+                    className='text-red-600 hover:bg-red-50 focus:text-red-600'
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <Trash2 className='mr-2 h-4 w-4' />
+                    <div>
+                      <div className='font-medium'>Xóa</div>
+                      <div className='text-xs opacity-75'>
+                        Không thể hoàn tác
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                </DeleteHouseholdDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
       }
     }
@@ -329,7 +412,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
   });
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-6'>
       {/* Search and Filters */}
       <div className='space-y-4'>
         {/* Search and Filters Row */}
@@ -337,18 +420,18 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
           {/* Search by Name/Phone */}
           <div className='flex'>
             <div className='relative w-[450px]'>
-              <Search className='text-muted-foreground absolute top-2.5 left-2 h-4 w-4' />
+              <Search className='text-muted-foreground absolute top-2.5 left-3 h-4 w-4' />
               <Input
                 placeholder='Tìm kiếm theo tên hộ gia đình, chủ hộ, số điện thoại...'
                 value={searchText}
                 onChange={(event) => setSearchText(event.target.value)}
-                className='max-w-md pl-8'
+                className='border-gray-200 pr-10 pl-10 focus:border-pink-300 focus:ring-pink-200'
               />
               {searchText && (
                 <Button
                   variant='ghost'
                   size='sm'
-                  className='absolute top-1 right-1 h-6 w-6 p-0'
+                  className='absolute top-1.5 right-1.5 h-6 w-6 p-0 text-gray-400 hover:text-gray-600'
                   onClick={() => setSearchText('')}
                 >
                   <X className='h-3 w-3' />
@@ -358,10 +441,10 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
           </div>
 
           {/* Location Filters */}
-          <div className='flex gap-2'>
+          <div className='flex gap-3'>
             <Select value={provinceFilter} onValueChange={setProvinceFilter}>
-              <SelectTrigger className='w-[250px]'>
-                <MapPin className='mr-2 h-4 w-4' />
+              <SelectTrigger className='w-[250px] border-gray-200 focus:border-pink-300 focus:ring-pink-200'>
+                <MapPin className='mr-2 h-4 w-4 text-gray-400' />
                 <SelectValue placeholder='Chọn tỉnh/thành phố' />
               </SelectTrigger>
               <SelectContent>
@@ -378,8 +461,8 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
               onValueChange={setWardFilter}
               disabled={!provinceFilter}
             >
-              <SelectTrigger className='w-[250px]'>
-                <MapPin className='mr-2 h-4 w-4' />
+              <SelectTrigger className='w-[250px] border-gray-200 focus:border-pink-300 focus:ring-pink-200'>
+                <MapPin className='mr-2 h-4 w-4 text-gray-400' />
                 <SelectValue placeholder='Chọn phường/xã' />
               </SelectTrigger>
               <SelectContent>
@@ -395,13 +478,13 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
 
         {/* Filter Actions and Results */}
         <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-3'>
             {hasActiveFilters && (
               <Button
                 variant='ghost'
                 size='sm'
                 onClick={clearFilters}
-                className='text-muted-foreground hover:text-foreground'
+                className='text-muted-foreground hover:text-foreground hover:bg-gray-100'
               >
                 <X className='mr-2 h-4 w-4' />
                 Xóa bộ lọc
@@ -409,14 +492,17 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
             )}
 
             {/* Active filter badges */}
-            <div className='flex gap-1'>
+            <div className='flex gap-2'>
               {searchText && (
-                <Badge variant='secondary' className='text-xs'>
+                <Badge
+                  variant='secondary'
+                  className='bg-pink-100 text-xs text-pink-800'
+                >
                   Tìm kiếm: "{searchText}"
                   <Button
                     variant='ghost'
                     size='sm'
-                    className='ml-1 h-3 w-3 p-0'
+                    className='ml-2 h-3 w-3 p-0 hover:bg-pink-200'
                     onClick={() => setSearchText('')}
                   >
                     <X className='h-2 w-2' />
@@ -424,12 +510,15 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                 </Badge>
               )}
               {provinceFilter && (
-                <Badge variant='secondary' className='text-xs'>
+                <Badge
+                  variant='secondary'
+                  className='bg-blue-100 text-xs text-blue-800'
+                >
                   Tỉnh: {provinceFilter}
                   <Button
                     variant='ghost'
                     size='sm'
-                    className='ml-1 h-3 w-3 p-0'
+                    className='ml-2 h-3 w-3 p-0 hover:bg-blue-200'
                     onClick={() => setProvinceFilter('')}
                   >
                     <X className='h-2 w-2' />
@@ -437,12 +526,15 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                 </Badge>
               )}
               {wardFilter && (
-                <Badge variant='secondary' className='text-xs'>
+                <Badge
+                  variant='secondary'
+                  className='bg-green-100 text-xs text-green-800'
+                >
                   Phường/Xã: {wardFilter}
                   <Button
                     variant='ghost'
                     size='sm'
-                    className='ml-1 h-3 w-3 p-0'
+                    className='ml-2 h-3 w-3 p-0 hover:bg-green-200'
                     onClick={() => setWardFilter('')}
                   >
                     <X className='h-2 w-2' />
@@ -452,21 +544,28 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
             </div>
           </div>
 
-          <div className='text-muted-foreground text-sm'>
+          <div className='text-muted-foreground flex items-center text-sm'>
+            <Home className='mr-1 h-4 w-4' />
             {filteredData.length} / {households.length} hộ gia đình
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className='rounded-md border'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 shadow-sm'>
         <Table>
-          <TableHeader>
+          <TableHeader className='bg-gray-50'>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className='border-b border-gray-200'
+              >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className='h-12'>
+                    <TableHead
+                      key={header.id}
+                      className='h-12 font-semibold text-gray-700'
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -481,14 +580,16 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, index) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='hover:bg-muted/50'
+                  className={`group hover:from-pink-25 border-b border-gray-100 transition-colors hover:bg-gradient-to-r hover:to-transparent ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                  }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className='py-3'>
+                    <TableCell key={cell.id} className='px-4 py-4'>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -501,25 +602,43 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className='text-muted-foreground h-24 text-center'
+                  className='text-muted-foreground h-32 text-center'
                 >
                   {hasActiveFilters ? (
-                    <div>
-                      <p>Không tìm thấy hộ gia đình nào phù hợp với bộ lọc</p>
+                    <div className='space-y-4'>
+                      <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
+                        <Search className='h-6 w-6 text-gray-400' />
+                      </div>
+                      <div>
+                        <p className='text-base font-medium text-gray-900'>
+                          Không tìm thấy hộ gia đình nào
+                        </p>
+                        <p className='text-sm text-gray-500'>
+                          Thử điều chỉnh bộ lọc hoặc tìm kiếm khác
+                        </p>
+                      </div>
                       <Button
-                        variant='link'
+                        variant='outline'
                         onClick={clearFilters}
-                        className='mt-2 text-pink-600 hover:text-pink-700'
+                        className='mt-4 border-pink-200 text-pink-700 hover:bg-pink-50'
                       >
+                        <X className='mr-2 h-4 w-4' />
                         Xóa bộ lọc
                       </Button>
                     </div>
                   ) : (
-                    <div>
-                      <p>Chưa có hộ gia đình nào.</p>
-                      <p className='text-sm'>
-                        Thêm hộ gia đình đầu tiên để bắt đầu.
-                      </p>
+                    <div className='space-y-4'>
+                      <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
+                        <Home className='h-6 w-6 text-gray-400' />
+                      </div>
+                      <div>
+                        <p className='text-base font-medium text-gray-900'>
+                          Chưa có hộ gia đình nào
+                        </p>
+                        <p className='text-sm text-gray-500'>
+                          Thêm hộ gia đình đầu tiên để bắt đầu quản lý
+                        </p>
+                      </div>
                     </div>
                   )}
                 </TableCell>
@@ -531,8 +650,9 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
 
       {/* Pagination */}
       {table.getPageCount() > 1 && (
-        <div className='flex items-center justify-between'>
-          <div className='text-muted-foreground text-sm'>
+        <div className='flex items-center justify-between rounded-lg border bg-gray-50 px-6 py-4'>
+          <div className='text-muted-foreground flex items-center text-sm'>
+            <Calendar className='mr-1 h-4 w-4' />
             Trang {table.getState().pagination.pageIndex + 1} /{' '}
             {table.getPageCount()}
           </div>
