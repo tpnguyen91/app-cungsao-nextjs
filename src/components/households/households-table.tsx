@@ -1,4 +1,4 @@
-// File: src/components/households/households-table.tsx - STYLED VERSION
+// Updated HouseholdsTable component - removes filteredData useMemo và sử dụng URL params
 'use client';
 
 import { Badge } from '@/components/ui/badge';
@@ -29,13 +29,12 @@ import {
 } from '@/components/ui/table';
 import { URL_GIA_DINH_DETAIL } from '@/constants/url';
 import { useHouseholdNavigation } from '@/hooks/use-household-navigation';
+import { getProvinces, getWardsByProvince } from '@/lib/vietnam-data';
 import {
   ColumnDef,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -58,6 +57,7 @@ import {
   X
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { DeleteHouseholdDialog } from './delete-household-dialog';
 import { EditHouseholdDialog } from './edit-household-dialog';
@@ -79,84 +79,134 @@ export interface Household {
 
 interface HouseholdsTableProps {
   households: Household[];
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  searchText: string;
+  provinceFilter: string;
+  wardFilter: string;
 }
 
-export function HouseholdsTable({ households }: HouseholdsTableProps) {
+export function HouseholdsTable({
+  households,
+  totalCount,
+  currentPage,
+  pageSize,
+  searchText: initialSearchText,
+  provinceFilter: initialProvinceFilter,
+  wardFilter: initialWardFilter
+}: HouseholdsTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [searchText, setSearchText] = React.useState('');
-  const [provinceFilter, setProvinceFilter] = React.useState<string>('');
-  const [wardFilter, setWardFilter] = React.useState<string>('');
-  const { openHouseholdDrawer } = useHouseholdNavigation();
 
-  const getMemberCount = (household: Household) => {
-    return household?.member_count || 0;
+  // Local state for immediate UI feedback
+  const [searchText, setSearchText] = React.useState(initialSearchText);
+  const [provinceFilter, setProvinceFilter] = React.useState(
+    initialProvinceFilter
+  );
+  const [wardFilter, setWardFilter] = React.useState(initialWardFilter);
+
+  const { openHouseholdDrawer } = useHouseholdNavigation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Update local state when props change (e.g., when page loads with existing filters)
+  React.useEffect(() => {
+    setSearchText(initialSearchText);
+    setProvinceFilter(initialProvinceFilter);
+    setWardFilter(initialWardFilter);
+  }, [initialSearchText, initialProvinceFilter, initialWardFilter]);
+
+  // Debounced URL update function
+  const debouncedUpdateURL = React.useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (params: URLSearchParams) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        router.push(`?${params.toString()}`);
+      }, 500); // 500ms debounce
+    };
+  }, [router]);
+
+  // Helper function to update URL parameters
+  const updateURLParams = (updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+
+    // Reset to page 1 when filters change (except when specifically updating page)
+    if (!updates.page) {
+      params.delete('page');
+    }
+
+    debouncedUpdateURL(params);
   };
 
-  // Get unique provinces and wards
-  const uniqueProvinces = React.useMemo(() => {
-    const provinces = households
-      .map((h) => h.province_id)
-      .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index);
-    return provinces;
-  }, [households]);
+  // Handle search text change
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    updateURLParams({ search: value });
+  };
 
-  const uniqueWards = React.useMemo(() => {
-    const wards = households
-      .filter((h) => !provinceFilter || h.province_id === provinceFilter)
-      .map((h) => h.ward_id)
-      .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index);
-    return wards;
-  }, [households, provinceFilter]);
-
-  // Apply filters
-  const filteredData = React.useMemo(() => {
-    return households.filter((household) => {
-      // Search text filter
-      if (searchText) {
-        const searchableText = [
-          household.household_name,
-          household.head_of_household?.full_name,
-          household.phone
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-
-        if (!searchableText.includes(searchText.toLowerCase())) {
-          return false;
-        }
-      }
-
-      // Province filter
-      if (provinceFilter && household.province_id !== provinceFilter) {
-        return false;
-      }
-
-      // Ward filter
-      if (wardFilter && household.ward_id !== wardFilter) {
-        return false;
-      }
-
-      return true;
+  // Handle province filter change
+  const handleProvinceChange = (value: string) => {
+    setProvinceFilter(value);
+    setWardFilter(''); // Reset ward when province changes
+    updateURLParams({
+      province: value,
+      ward: '' // Clear ward when province changes
     });
-  }, [households, searchText, provinceFilter, wardFilter]);
+  };
+
+  // Handle ward filter change
+  const handleWardChange = (value: string) => {
+    setWardFilter(value);
+    updateURLParams({ ward: value });
+  };
 
   // Clear all filters
   const clearFilters = () => {
     setSearchText('');
     setProvinceFilter('');
     setWardFilter('');
+    router.push(window.location.pathname); // Clear all search params
   };
+
+  // Handle pagination
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newPage > 1) {
+      params.set('page', newPage.toString());
+    } else {
+      params.delete('page');
+    }
+    router.push(`?${params.toString()}`);
+  };
+
+  const getMemberCount = (household: Household) => {
+    return household?.member_count || 0;
+  };
+
+  const provinces = getProvinces();
+  const wards = provinceFilter ? getWardsByProvince(provinceFilter) : [];
 
   // Check if any filters are active
   const hasActiveFilters = searchText || provinceFilter || wardFilter;
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = totalCount > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+  const endIndex = Math.min(currentPage * pageSize, totalCount);
 
   const columns: ColumnDef<Household>[] = [
     {
@@ -193,7 +243,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
       header: () => (
         <div className='flex items-center font-semibold'>
           <MapPin className='mr-2 h-4 w-4' />
-          Địa chỉ
+          Thông tin
         </div>
       ),
       cell: ({ row }) => (
@@ -390,25 +440,21 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
   ];
 
   const table = useReactTable({
-    data: filteredData,
+    data: households, // Sử dụng data trực tiếp từ server (đã được filter)
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
       columnFilters,
       columnVisibility
     },
-    initialState: {
-      pagination: {
-        pageSize: 10
-      }
-    }
+    manualPagination: true, // Quan trọng: báo table rằng pagination được xử lý manually
+    manualFiltering: true, // Quan trọng: báo table rằng filtering được xử lý manually
+    pageCount: totalPages // Tổng số pages từ server
   });
 
   return (
@@ -424,7 +470,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
               <Input
                 placeholder='Tìm kiếm theo tên hộ gia đình, chủ hộ, số điện thoại...'
                 value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
+                onChange={(event) => handleSearchChange(event.target.value)}
                 className='border-gray-200 pr-10 pl-10 focus:border-pink-300 focus:ring-pink-200'
               />
               {searchText && (
@@ -432,7 +478,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                   variant='ghost'
                   size='sm'
                   className='absolute top-1.5 right-1.5 h-6 w-6 p-0 text-gray-400 hover:text-gray-600'
-                  onClick={() => setSearchText('')}
+                  onClick={() => handleSearchChange('')}
                 >
                   <X className='h-3 w-3' />
                 </Button>
@@ -442,15 +488,15 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
 
           {/* Location Filters */}
           <div className='flex gap-3'>
-            <Select value={provinceFilter} onValueChange={setProvinceFilter}>
+            <Select value={provinceFilter} onValueChange={handleProvinceChange}>
               <SelectTrigger className='w-[250px] border-gray-200 focus:border-pink-300 focus:ring-pink-200'>
                 <MapPin className='mr-2 h-4 w-4 text-gray-400' />
                 <SelectValue placeholder='Chọn tỉnh/thành phố' />
               </SelectTrigger>
               <SelectContent>
-                {uniqueProvinces.map((province) => (
-                  <SelectItem key={province} value={province}>
-                    {province}
+                {provinces.map((province) => (
+                  <SelectItem key={province.code} value={province.code}>
+                    {province.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -458,7 +504,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
 
             <Select
               value={wardFilter}
-              onValueChange={setWardFilter}
+              onValueChange={handleWardChange}
               disabled={!provinceFilter}
             >
               <SelectTrigger className='w-[250px] border-gray-200 focus:border-pink-300 focus:ring-pink-200'>
@@ -466,9 +512,9 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                 <SelectValue placeholder='Chọn phường/xã' />
               </SelectTrigger>
               <SelectContent>
-                {uniqueWards.map((ward) => (
-                  <SelectItem key={ward} value={ward}>
-                    {ward}
+                {wards.map((ward) => (
+                  <SelectItem key={ward.code} value={ward.code}>
+                    {ward.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -503,7 +549,7 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                     variant='ghost'
                     size='sm'
                     className='ml-2 h-3 w-3 p-0 hover:bg-pink-200'
-                    onClick={() => setSearchText('')}
+                    onClick={() => handleSearchChange('')}
                   >
                     <X className='h-2 w-2' />
                   </Button>
@@ -514,12 +560,14 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                   variant='secondary'
                   className='bg-blue-100 text-xs text-blue-800'
                 >
-                  Tỉnh: {provinceFilter}
+                  Tỉnh:{' '}
+                  {provinces.find((p) => p.code === provinceFilter)?.name ||
+                    provinceFilter}
                   <Button
                     variant='ghost'
                     size='sm'
                     className='ml-2 h-3 w-3 p-0 hover:bg-blue-200'
-                    onClick={() => setProvinceFilter('')}
+                    onClick={() => handleProvinceChange('')}
                   >
                     <X className='h-2 w-2' />
                   </Button>
@@ -530,12 +578,13 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
                   variant='secondary'
                   className='bg-green-100 text-xs text-green-800'
                 >
-                  Phường/Xã: {wardFilter}
+                  Phường/Xã:{' '}
+                  {wards.find((w) => w.code === wardFilter)?.name || wardFilter}
                   <Button
                     variant='ghost'
                     size='sm'
                     className='ml-2 h-3 w-3 p-0 hover:bg-green-200'
-                    onClick={() => setWardFilter('')}
+                    onClick={() => handleWardChange('')}
                   >
                     <X className='h-2 w-2' />
                   </Button>
@@ -546,7 +595,10 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
 
           <div className='text-muted-foreground flex items-center text-sm'>
             <Home className='mr-1 h-4 w-4' />
-            {filteredData.length} / {households.length} hộ gia đình
+            {totalCount > 0
+              ? `${startIndex}-${endIndex} trên ${totalCount}`
+              : '0'}{' '}
+            hộ gia đình
           </div>
         </div>
       </div>
@@ -649,28 +701,90 @@ export function HouseholdsTable({ households }: HouseholdsTableProps) {
       </div>
 
       {/* Pagination */}
-      {table.getPageCount() > 1 && (
+      {totalPages > 1 && (
         <div className='flex items-center justify-between rounded-lg border bg-gray-50 px-6 py-4'>
           <div className='text-muted-foreground flex items-center text-sm'>
             <Calendar className='mr-1 h-4 w-4' />
-            Trang {table.getState().pagination.pageIndex + 1} /{' '}
-            {table.getPageCount()}
+            Trang {currentPage} / {totalPages}
           </div>
           <div className='flex items-center space-x-2'>
+            {/* Previous page button */}
             <Button
               variant='outline'
               size='sm'
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
               className='border-pink-200 text-pink-700 hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Trước
             </Button>
+
+            {/* Page numbers */}
+            <div className='flex items-center space-x-1'>
+              {/* Show first page */}
+              {currentPage > 3 && (
+                <>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => handlePageChange(1)}
+                    className='border-pink-200 text-pink-700 hover:bg-pink-50'
+                  >
+                    1
+                  </Button>
+                  {currentPage > 4 && (
+                    <span className='text-gray-400'>...</span>
+                  )}
+                </>
+              )}
+
+              {/* Show pages around current page */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNum =
+                  Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                if (pageNum > totalPages) return null;
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === currentPage ? 'default' : 'outline'}
+                    size='sm'
+                    onClick={() => handlePageChange(pageNum)}
+                    className={
+                      pageNum === currentPage
+                        ? 'bg-pink-600 text-white hover:bg-pink-700'
+                        : 'border-pink-200 text-pink-700 hover:bg-pink-50'
+                    }
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+
+              {/* Show last page */}
+              {currentPage < totalPages - 2 && (
+                <>
+                  {currentPage < totalPages - 3 && (
+                    <span className='text-gray-400'>...</span>
+                  )}
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => handlePageChange(totalPages)}
+                    className='border-pink-200 text-pink-700 hover:bg-pink-50'
+                  >
+                    {totalPages}
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Next page button */}
             <Button
               variant='outline'
               size='sm'
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
               className='border-pink-200 text-pink-700 hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Sau
