@@ -51,6 +51,7 @@ import {
   MapPin,
   MoreHorizontal,
   Phone,
+  Printer,
   Search,
   Trash2,
   Users,
@@ -61,6 +62,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { DeleteHouseholdDialog } from './delete-household-dialog';
 import { EditHouseholdDialog } from './edit-household-dialog';
+import { PrintHouseholdWrapper } from './print-household-wrapper';
 
 export interface Household {
   id: string;
@@ -398,6 +400,25 @@ export function HouseholdsTable({
                       </div>
                     </div>
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <PrintHouseholdWrapper
+                    householdId={household.id}
+                    householdName={household.household_name}
+                    address={household.address}
+                    phone={household.phone}
+                    headOfHousehold={household.head_of_household}
+                  >
+                    <div className='flex w-full cursor-pointer items-center hover:bg-green-50 hover:text-green-700'>
+                      <Printer className='mr-2 h-4 w-4' />
+                      <div>
+                        <div className='font-medium'>In danh sách</div>
+                        <div className='text-muted-foreground text-xs'>
+                          In thông tin {getMemberCount(household)} thành viên
+                        </div>
+                      </div>
+                    </div>
+                  </PrintHouseholdWrapper>
                 </DropdownMenuItem>
                 <EditHouseholdDialog household={household}>
                   <DropdownMenuItem
