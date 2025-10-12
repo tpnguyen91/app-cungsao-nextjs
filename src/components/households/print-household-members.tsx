@@ -14,7 +14,7 @@ import { getCanChi, getSaoChieuMenh, getVanHan } from '@/lib/utils';
 import type { FamilyMember } from '@/types/database';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { Calendar, MapPin, Phone, Printer, Users } from 'lucide-react';
+import { MapPin, Phone, Printer, Users } from 'lucide-react';
 import { useState } from 'react';
 
 interface PrintHouseholdData {
@@ -81,12 +81,14 @@ export function PrintHouseholdMembers({
           )}
         </DialogTrigger>
 
-        <DialogContent className='max-h-[90vh] max-w-6xl overflow-auto'>
+        <DialogContent
+          className='max-h-[90vh] overflow-y-scroll'
+          style={{ width: 950, maxWidth: '297mm' }}
+        >
           <DialogHeader className='print:hidden'>
             <DialogTitle className='flex items-center justify-between'>
-              <span>Xem trước bản in</span>
-              <Button onClick={handlePrint} className='ml-4'>
-                <Printer className='mr-2 h-4 w-4' />
+              <Button onClick={handlePrint}>
+                <Printer className='h-4 w-4' />
                 In ngay
               </Button>
             </DialogTitle>
@@ -216,7 +218,7 @@ export function PrintHouseholdMembers({
           {/* Print Content */}
           <div className='print-content'>
             {/* Header */}
-            <div className='print-header'>
+            {/* <div className='print-header'>
               <div className='print-title'>
                 Danh sách thành viên gia đình - Cúng sao
               </div>
@@ -249,10 +251,10 @@ export function PrintHouseholdMembers({
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Table */}
-            <table className='print-table'>
+            {/* <table className='print-table'>
               <thead>
                 <tr>
                   <th className='number-col'>STT</th>
@@ -309,10 +311,10 @@ export function PrintHouseholdMembers({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table> */}
 
             {/* Footer */}
-            <div className='print-footer'>
+            {/* <div className='print-footer'>
               <div>
                 <div className='font-semibold'>Ghi chú:</div>
                 <div>
@@ -327,193 +329,166 @@ export function PrintHouseholdMembers({
                   (Ký tên và đóng dấu)
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Preview Content (for screen) */}
-          <div className='screen:block mt-4 rounded-lg bg-gray-50 p-6 print:hidden'>
-            <div
-              className='rounded bg-white p-6 shadow-sm'
-              style={{
-                minHeight: '29.7cm',
-                width: '21cm',
-                margin: '0 auto',
-                transform: 'scale(0.7)',
-                transformOrigin: 'top center'
-              }}
-            >
-              {/* Preview Header */}
-              <div className='mb-6 border-b-2 border-gray-800 pb-4'>
-                <h1 className='mb-4 text-center text-2xl font-bold uppercase'>
-                  Danh sách thành viên gia đình - Cúng sao
-                </h1>
+          <div
+            className='rounded bg-white p-6 shadow-sm'
+            style={{
+              minHeight: '21cm',
+              width: 900
+              // transform: 'scale(0.7)'
+            }}
+          >
+            {/* Preview Header */}
+            <div className='mb-6 border-b-2 border-gray-800 pb-4'>
+              <h1 className='mb-4 text-center text-2xl font-bold uppercase'>
+                Danh sách thành viên gia đình - Cúng sao
+              </h1>
 
-                <div className='mb-4 grid grid-cols-2 gap-6'>
-                  <div className='space-y-2'>
-                    <div className='flex items-center gap-2'>
-                      <Users className='h-4 w-4' />
-                      <span className='font-semibold'>Chủ hộ:</span>
-                      <span>
-                        {getHeadOfHousehold()?.full_name || 'Chưa xác định'}
-                      </span>
-                    </div>
-                    <div className='flex items-start gap-2'>
-                      <MapPin className='mt-0.5 h-4 w-4' />
-                      <span className='font-semibold'>Địa chỉ:</span>
-                      <span>{household.address}</span>
-                    </div>
-                    {household.phone && (
-                      <div className='flex items-center gap-2'>
-                        <Phone className='h-4 w-4' />
-                        <span className='font-semibold'>Số điện thoại:</span>
-                        <span>{household.phone}</span>
-                      </div>
-                    )}
+              <div className='mb-4 grid grid-cols-2 gap-6'>
+                <div className='space-y-2'>
+                  <div className='flex items-center gap-2'>
+                    <Users className='h-4 w-4' />
+                    <span className='font-semibold'>Chủ hộ:</span>
+                    <span>
+                      {getHeadOfHousehold()?.full_name || 'Chưa xác định'}
+                    </span>
                   </div>
-                  <div className='space-y-2 text-right'>
-                    <div>
-                      <span className='font-semibold'>Tổng thành viên:</span>
-                      <Badge variant='secondary' className='ml-2'>
-                        {members.length} người
-                      </Badge>
+                  <div className='flex items-start gap-2'>
+                    <MapPin className='mt-0.5 h-4 w-4' />
+                    <span className='font-semibold'>Địa chỉ:</span>
+                    <span>{household.address}</span>
+                  </div>
+                </div>
+                <div className='space-y-2'>
+                  {household.phone && (
+                    <div className='flex flex-row items-center space-x-1'>
+                      <Phone className='h-4 w-4' />
+                      <span className='font-semibold'>Số điện thoại:</span>
+                      <span>{household.phone}</span>
                     </div>
-                    <div className='flex items-center justify-end gap-2'>
-                      <Calendar className='h-4 w-4' />
-                      <span className='font-semibold'>Ngày in:</span>
-                      <span>{formatPrintDate()}</span>
-                    </div>
+                  )}
+                  <div className='flex flex-row items-center space-x-1'>
+                    <Users className='h-4 w-4' />
+                    <span className='font-semibold'>Tổng thành viên:</span>
+                    <Badge variant='secondary' className='ml-2'>
+                      {members.length} người
+                    </Badge>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Preview Table */}
-              <div className='overflow-x-auto'>
-                <table className='w-full border-collapse border border-gray-800 text-sm'>
-                  <thead>
-                    <tr className='bg-gray-100'>
-                      <th className='w-12 border border-gray-800 p-2 text-center'>
-                        STT
-                      </th>
-                      <th className='w-36 border border-gray-800 p-2 text-center'>
-                        Họ và tên
-                      </th>
-                      <th className='w-28 border border-gray-800 p-2 text-center'>
-                        Pháp danh
-                      </th>
-                      <th className='w-20 border border-gray-800 p-2 text-center'>
-                        Tuổi
-                      </th>
-                      <th className='w-20 border border-gray-800 p-2 text-center'>
-                        Năm sinh
-                      </th>
-                      <th className='w-24 border border-gray-800 p-2 text-center'>
-                        Sao chiếu mệnh
-                      </th>
-                      <th className='w-20 border border-gray-800 p-2 text-center'>
-                        Vận hạn
-                      </th>
-                      <th className='w-16 border border-gray-800 p-2 text-center'>
-                        Giới tính
-                      </th>
-                      <th className='border border-gray-800 p-2 text-center'>
-                        Quê quán
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedMembers.map((member, index) => (
-                      <tr key={member.id} className='hover:bg-gray-50'>
-                        <td className='border border-gray-800 p-2 text-center'>
-                          {index + 1}
-                        </td>
-                        <td className='border border-gray-800 p-2'>
-                          <div className='font-medium'>{member.full_name}</div>
-                          {member.is_head_of_household && (
-                            <Badge
-                              variant='secondary'
-                              className='mt-1 bg-blue-100 text-xs text-blue-800'
-                            >
-                              Chủ hộ
-                            </Badge>
+            {/* Preview Table */}
+            <div className='overflow-x-auto'>
+              <table className='w-full border-collapse border border-gray-800 text-sm'>
+                <thead>
+                  <tr className='bg-gray-100'>
+                    <th className='w-12 border border-gray-800 p-2 text-center'>
+                      STT
+                    </th>
+                    <th className='w-36 border border-gray-800 p-2 text-center'>
+                      Họ và tên
+                    </th>
+                    <th className='w-28 border border-gray-800 p-2 text-center'>
+                      Pháp danh
+                    </th>
+                    <th className='w-20 border border-gray-800 p-2 text-center'>
+                      Tuổi
+                    </th>
+                    <th className='w-24 border border-gray-800 p-2 text-center'>
+                      Sao chiếu mệnh
+                    </th>
+                    <th className='w-20 border border-gray-800 p-2 text-center'>
+                      Vận hạn
+                    </th>
+                    <th className='w-16 border border-gray-800 p-2 text-center'>
+                      Giới tính
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedMembers.map((member, index) => (
+                    <tr key={member.id} className='hover:bg-gray-50'>
+                      <td className='border border-gray-800 p-2 text-center'>
+                        {index + 1}
+                      </td>
+                      <td className='border border-gray-800 p-2'>
+                        <div className='font-medium'>{member.full_name}</div>
+                        {/* {member.is_head_of_household && (
+                          <Badge
+                            variant='secondary'
+                            className='mt-1 bg-blue-100 text-xs text-blue-800'
+                          >
+                            Chủ hộ
+                          </Badge>
+                        )} */}
+                      </td>
+                      <td className='border border-gray-800 p-2 text-center'>
+                        {member.dharma_name || (
+                          <span className='text-gray-500 italic'>-</span>
+                        )}
+                      </td>
+                      <td className='border border-gray-800 p-2 text-center'>
+                        <div className='font-medium'>
+                          {calculateAge(member.birth_year)} tuổi
+                        </div>
+                        <div className='text-xs text-gray-600'>
+                          {getCanChi(member.birth_year)}
+                        </div>
+                      </td>
+
+                      <td className='border border-gray-800 p-2 text-center'>
+                        <span className='font-medium text-amber-700'>
+                          {getSaoChieuMenh(
+                            member.birth_year,
+                            member.gender as string
                           )}
-                        </td>
-                        <td className='border border-gray-800 p-2 text-center'>
-                          {member.dharma_name || (
-                            <span className='text-gray-500 italic'>
-                              Chưa có
-                            </span>
-                          )}
-                        </td>
-                        <td className='border border-gray-800 p-2 text-center'>
-                          <div className='font-medium'>
-                            {calculateAge(member.birth_year)} tuổi
-                          </div>
-                          <div className='text-xs text-gray-600'>
-                            {getCanChi(member.birth_year)}
-                          </div>
-                        </td>
-                        <td className='border border-gray-800 p-2 text-center font-mono'>
-                          {member.birth_year}
-                        </td>
-                        <td className='border border-gray-800 p-2 text-center'>
-                          <span className='font-medium text-amber-700'>
-                            {getSaoChieuMenh(
+                        </span>
+                      </td>
+                      <td className='border border-gray-800 p-2 text-center'>
+                        <span className='font-medium text-purple-700'>
+                          {
+                            getVanHan(
                               member.birth_year,
                               member.gender as string
-                            )}
-                          </span>
-                        </td>
-                        <td className='border border-gray-800 p-2 text-center'>
-                          <span className='font-medium text-purple-700'>
-                            {
-                              getVanHan(
-                                member.birth_year,
-                                member.gender as string
-                              ).han
-                            }
-                          </span>
-                        </td>
-                        <td className='border border-gray-800 p-2 text-center'>
-                          <Badge variant='outline' className='text-xs'>
-                            {GENDER_LABELS[
-                              member.gender as keyof typeof GENDER_LABELS
-                            ] || member.gender}
-                          </Badge>
-                        </td>
-                        <td className='border border-gray-800 p-2'>
-                          {member.hometown || (
-                            <span className='text-gray-500 italic'>
-                              Chưa cập nhật
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                            ).han
+                          }
+                        </span>
+                      </td>
+                      <td className='border border-gray-800 p-2 text-center'>
+                        <Badge variant='outline' className='text-xs'>
+                          {GENDER_LABELS[
+                            member.gender as keyof typeof GENDER_LABELS
+                          ] || member.gender}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-              {/* Preview Footer */}
-              <div className='mt-6 flex items-end justify-between text-sm'>
-                <div>
-                  <div className='mb-2 font-semibold'>Ghi chú:</div>
-                  <div className='space-y-1 text-xs'>
-                    <div>
-                      - Danh sách được sắp xếp theo thứ tự: Chủ hộ, sau đó theo
-                      tuổi giảm dần
-                    </div>
-                    <div>
-                      - Sao chiếu mệnh và vận hạn được tính theo âm lịch
-                    </div>
+            {/* Preview Footer */}
+            <div className='mt-6 flex items-end justify-between text-sm'>
+              <div>
+                <div className='mb-2 font-semibold'>Ghi chú:</div>
+                <div className='space-y-1 text-xs'>
+                  <div>
+                    - Danh sách được sắp xếp theo thứ tự: Chủ hộ, sau đó theo
+                    tuổi giảm dần
                   </div>
-                </div>
-                <div className='text-center'>
-                  <div className='mb-2 font-semibold'>Người lập danh sách</div>
-                  <div className='w-32 border-t border-gray-400 pt-16 text-center text-xs'>
-                    (Ký tên và đóng dấu)
-                  </div>
+                  <div>- Sao chiếu mệnh và vận hạn được tính theo âm lịch</div>
                 </div>
               </div>
+              {/* <div className='text-center'>
+                <div className='mb-2 font-semibold'>Người lập danh sách</div>
+                <div className='w-32 border-t border-gray-400 pt-16 text-center text-xs'>
+                  (Ký tên và đóng dấu)
+                </div>
+              </div> */}
             </div>
           </div>
         </DialogContent>
