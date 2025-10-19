@@ -70,7 +70,7 @@ export function PrintHouseholdMembers({
   // Cấu hình react-to-print (API mới)
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `Danh-sach-thanh-vien-${household.household_name || 'gia-dinh'}-${format(new Date(), 'dd-MM-yyyy')}`,
+    documentTitle: '', //`Danh-sach-thanh-vien-${household.household_name || 'gia-dinh'}-${format(new Date(), 'dd-MM-yyyy')}`,
     pageStyle: `
       @page {
         size: A4 landscape;
@@ -125,9 +125,9 @@ export function PrintHouseholdMembers({
           {/* Print Content - Nội dung sẽ được in */}
           <div
             ref={printRef}
-            className='print-content rounded bg-white p-6 shadow-sm'
+            className='print-content rounded bg-white p-6'
             style={{
-              minHeight: '21cm',
+              // minHeight: '21cm',
               width: 900
             }}
           >
@@ -262,26 +262,6 @@ export function PrintHouseholdMembers({
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Footer */}
-            <div className='mt-6 flex items-end justify-between text-sm'>
-              <div>
-                <div className='mb-2 font-semibold'>Ghi chú:</div>
-                <div className='space-y-1 text-xs'>
-                  <div>
-                    - Danh sách được sắp xếp theo thứ tự: Chủ hộ, sau đó theo
-                    tuổi giảm dần
-                  </div>
-                  <div>- Sao chiếu mệnh và vận hạn được tính theo âm lịch</div>
-                </div>
-              </div>
-              <div className='text-center'>
-                <div className='mb-2 font-semibold'>Người lập danh sách</div>
-                <div className='w-32 border-t border-gray-400 pt-16 text-center text-xs'>
-                  (Ký tên và đóng dấu)
-                </div>
-              </div>
             </div>
           </div>
         </DialogContent>
