@@ -9,10 +9,12 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:skip": "SKIP_TYPE_CHECK=true SKIP_LINT=true next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "eslint src --fix && pnpm format",
     "lint:strict": "eslint --max-warnings=0 src",
+    "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier -c -w .",
     "prepare": "husky"

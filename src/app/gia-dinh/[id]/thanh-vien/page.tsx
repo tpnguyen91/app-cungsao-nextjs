@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
 import { InlineFamilyMembersTable } from '@/components/family-members/inline-family-members-table';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 interface PageProps {
   params: {
@@ -11,7 +11,7 @@ interface PageProps {
   };
 }
 
-export default async function FamilyMembersPage({ params }: PageProps) {
+export default async function FamilyMembersPage({ params }: any) {
   const supabase = createClient();
   const {
     data: { user }

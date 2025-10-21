@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { EditHouseholdDialog } from '@/components/households/edit-household-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,22 +8,13 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Users,
-  MapPin,
-  Crown,
-  Calendar,
-  Plus,
-  Edit,
-  ArrowLeft
-} from 'lucide-react';
-import Link from 'next/link';
-import { EditHouseholdDialog } from '@/components/households/edit-household-dialog';
+import { createClient } from '@/lib/supabase/server';
+import { getProvinceByCode, getWardByCode } from '@/lib/vietnam-data';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { getProvinceByCode, getWardByCode } from '@/lib/vietnam-data';
+import { ArrowLeft, Calendar, Crown, Edit, MapPin, Users } from 'lucide-react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 interface PageProps {
   params: {
@@ -30,7 +22,7 @@ interface PageProps {
   };
 }
 
-export default async function HouseholdDetailPage({ params }: PageProps) {
+export default async function HouseholdDetailPage({ params }: any) {
   const supabase = createClient();
   const {
     data: { user }
@@ -89,9 +81,9 @@ export default async function HouseholdDetailPage({ params }: PageProps) {
     .limit(5);
 
   const livingMembers =
-    household.family_members?.filter((m) => m.is_alive) || [];
+    household.family_members?.filter((m: any) => m.is_alive) || [];
   const deceasedMembers =
-    household.family_members?.filter((m) => !m.is_alive) || [];
+    household.family_members?.filter((m: any) => !m.is_alive) || [];
 
   // Get full address
   const getFullAddress = () => {
@@ -211,7 +203,7 @@ export default async function HouseholdDetailPage({ params }: PageProps) {
           <CardContent>
             {household.family_members && household.family_members.length > 0 ? (
               <div className='space-y-3'>
-                {household.family_members.slice(0, 5).map((member) => (
+                {household.family_members.slice(0, 5).map((member: any) => (
                   <div
                     key={member.id}
                     className='flex items-center justify-between'

@@ -4,7 +4,18 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+
+    // Strict Type-Checking Options
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Module Resolution Options
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -13,11 +24,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+
+    // Path Mapping
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "~/*": ["./public/*"]
     },
+
+    // Advanced
     "incremental": true,
     "plugins": [
       {

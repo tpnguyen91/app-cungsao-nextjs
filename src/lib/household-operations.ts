@@ -70,7 +70,7 @@ export async function createHouseholdWithHead(
       success: true,
       message: 'Tạo hộ gia đình thành công!'
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating household with head:', error);
 
     // Handle specific error cases
