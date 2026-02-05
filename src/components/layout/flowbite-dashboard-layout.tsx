@@ -2,17 +2,7 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Sidebar, Navbar, Avatar, Dropdown } from 'flowbite-react';
-import {
-  HiHome,
-  HiUsers,
-  HiCalendar,
-  HiCog,
-  HiMenuAlt3,
-  HiLogout,
-  HiUser
-} from 'react-icons/hi';
-import Link from 'next/link';
+import { URL_GIA_DINH } from '@/constants/url';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
@@ -24,28 +14,14 @@ interface FlowbiteDashboardLayoutProps {
 
 const sidebarItems = [
   {
-    href: '/dashboard',
+    href: '/',
     label: 'Trang chủ',
-    icon: HiHome,
     enable: false
   },
   {
-    href: '/dashboard/households',
+    href: URL_GIA_DINH,
     label: 'Hộ gia đình',
-    icon: HiUsers,
     enable: true
-  },
-  {
-    href: '/dashboard/worship',
-    label: 'Lịch cúng',
-    icon: HiCalendar,
-    enable: false
-  },
-  {
-    href: '/dashboard/settings',
-    label: 'Cài đặt',
-    icon: HiCog,
-    enable: false
   }
 ];
 

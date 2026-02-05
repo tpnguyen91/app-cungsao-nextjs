@@ -154,7 +154,10 @@ export function InlineFamilyMembersTable({
             Quản lý thông tin các thành viên trong gia đình
           </p>
         </div>
-        <Button onClick={handleAddMember}>
+        <Button
+          onClick={handleAddMember}
+          className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
+        >
           <Plus className='mr-2 h-4 w-4' />
           Thêm thành viên
         </Button>
@@ -190,7 +193,11 @@ export function InlineFamilyMembersTable({
                         Thêm thành viên đầu tiên để bắt đầu
                       </p>
                     </div>
-                    <Button onClick={handleAddMember} size='sm'>
+                    <Button
+                      onClick={handleAddMember}
+                      size='sm'
+                      className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
+                    >
                       <Plus className='mr-2 h-4 w-4' />
                       Thêm thành viên
                     </Button>
@@ -199,7 +206,10 @@ export function InlineFamilyMembersTable({
               </TableRow>
             ) : (
               familyMembers.map((member) => (
-                <TableRow key={member.id} className='group'>
+                <TableRow
+                  key={member.id}
+                  className='group cursor-pointer transition-colors duration-150 hover:bg-gray-50'
+                >
                   <TableCell className='font-medium'>
                     <div className='flex items-center space-x-2'>
                       <span>{member.full_name}</span>
@@ -212,7 +222,7 @@ export function InlineFamilyMembersTable({
                   </TableCell>
                   <TableCell className='text-muted-foreground'>
                     {member.dharma_name || (
-                      <span className='italic'>Chưa có</span>
+                      <span className='text-gray-400 italic'>Chưa có</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -247,13 +257,13 @@ export function InlineFamilyMembersTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <div className='flex items-center justify-center space-x-1 opacity-0 transition-opacity group-hover:opacity-100'>
+                    <div className='flex items-center justify-center space-x-1'>
                       <Button
                         size='sm'
                         variant='ghost'
                         onClick={() => handleViewDetail(member)}
                         title='Xem chi tiết'
-                        className='h-8 w-8 p-0'
+                        className='h-8 w-8 cursor-pointer p-0 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600'
                       >
                         <Eye className='h-4 w-4' />
                       </Button>
@@ -262,7 +272,7 @@ export function InlineFamilyMembersTable({
                         variant='ghost'
                         onClick={() => handleEditMember(member)}
                         title='Chỉnh sửa'
-                        className='h-8 w-8 p-0'
+                        className='h-8 w-8 cursor-pointer p-0 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-600'
                       >
                         <Edit className='h-4 w-4' />
                       </Button>
@@ -271,7 +281,7 @@ export function InlineFamilyMembersTable({
                         variant='ghost'
                         onClick={() => handleDeleteMember(member)}
                         title='Xóa'
-                        className='h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-700'
+                        className='h-8 w-8 cursor-pointer p-0 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600'
                       >
                         <Trash2 className='h-4 w-4' />
                       </Button>

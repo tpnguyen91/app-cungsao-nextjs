@@ -1,49 +1,28 @@
-import {
-  Geist,
-  Geist_Mono,
-  Instrument_Sans,
-  Inter,
-  Mulish,
-  Noto_Sans_Mono
-} from 'next/font/google';
+import { Geist, Geist_Mono, Be_Vietnam_Pro } from 'next/font/google';
 
 import { cn } from '@/lib/utils';
 
+// Primary sans-serif font
 const fontSans = Geist({
   subsets: ['latin'],
   variable: '--font-sans'
 });
 
+// Monospace font for code
 const fontMono = Geist_Mono({
   subsets: ['latin'],
   variable: '--font-mono'
 });
 
-const fontInstrument = Instrument_Sans({
-  subsets: ['latin'],
-  variable: '--font-instrument'
-});
-
-const fontNotoMono = Noto_Sans_Mono({
-  subsets: ['latin'],
-  variable: '--font-noto-mono'
-});
-
-const fontMullish = Mulish({
-  subsets: ['latin'],
-  variable: '--font-mullish'
-});
-
-const fontInter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter'
+// Vietnamese-friendly font - primary for this app
+const fontBeVietnam = Be_Vietnam_Pro({
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-be-vietnam'
 });
 
 export const fontVariables = cn(
   fontSans.variable,
   fontMono.variable,
-  fontInstrument.variable,
-  fontNotoMono.variable,
-  fontMullish.variable,
-  fontInter.variable
+  fontBeVietnam.variable
 );

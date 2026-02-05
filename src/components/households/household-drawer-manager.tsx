@@ -43,16 +43,23 @@ export function HouseholdDrawerManager({
 
   useEffect(() => {
     if (householdId) {
+      // Open drawer immediately for smooth animation
+      setIsDrawerOpen(true);
+      setIsLoading(true);
       loadHouseholdData(householdId);
     } else {
       setIsDrawerOpen(false);
-      setSelectedHousehold(null);
-      setHouseholdMembers([]);
+      // Delay clearing data to allow close animation
+      const timer = setTimeout(() => {
+        setSelectedHousehold(null);
+        setHouseholdMembers([]);
+      }, 200);
+      return () => clearTimeout(timer);
     }
+    return undefined;
   }, [householdId, userId]);
 
   const loadHouseholdData = async (id: string) => {
-    setIsLoading(true);
     try {
       const supabase = createClient();
 
@@ -84,7 +91,6 @@ export function HouseholdDrawerManager({
 
       setSelectedHousehold(household);
       setHouseholdMembers(members || []);
-      setIsDrawerOpen(true);
     } catch (error) {
       console.error('Error loading household data:', error);
       closeDrawer();
@@ -114,6 +120,7 @@ export function HouseholdDrawerManager({
         household={selectedHousehold}
         members={householdMembers}
         isOpen={isDrawerOpen}
+        isLoading={isLoading}
         onClose={closeDrawer}
         onUpdate={updateHousehold}
       />

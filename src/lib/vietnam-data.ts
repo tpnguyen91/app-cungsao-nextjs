@@ -1,7 +1,7 @@
 import provincesData from '@/data/province.json';
 import wardsData from '@/data/ward.json';
 
-// Define types for the data structure
+// Types
 export interface Province {
   name: string;
   slug: string;
@@ -21,33 +21,47 @@ export interface Ward {
   parent_code: string;
 }
 
-export interface VietnamData {
-  provinces: Record<string, Province>;
-  wards: Record<string, Ward>;
-}
+// Lazy-loaded and cached data
+let _provinces: Province[] | null = null;
+let _wardsByProvince: Map<string, Ward[]> | null = null;
 
-export const vietnamData: VietnamData = {
-  provinces: provincesData as Record<string, Province>,
-  wards: wardsData as Record<string, Ward>
+const provinces = provincesData as Record<string, Province>;
+const wards = wardsData as Record<string, Ward>;
+
+// Memoized helper functions - computed once
+export const getProvinces = (): Province[] => {
+  if (!_provinces) {
+    _provinces = Object.values(provinces).sort((a, b) =>
+      a.name.localeCompare(b.name, 'vi')
+    );
+  }
+  return _provinces;
 };
 
-// Helper functions
-export const getProvinces = () => {
-  return Object.values(vietnamData.provinces).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+export const getWardsByProvince = (provinceCode: string): Ward[] => {
+  if (!_wardsByProvince) {
+    _wardsByProvince = new Map();
+    // Pre-group all wards by province for O(1) lookup
+    for (const ward of Object.values(wards)) {
+      const existing = _wardsByProvince.get(ward.parent_code) || [];
+      existing.push(ward);
+      _wardsByProvince.set(ward.parent_code, existing);
+    }
+    // Sort each group once
+    for (const [code, wardList] of _wardsByProvince) {
+      _wardsByProvince.set(
+        code,
+        wardList.sort((a, b) => a.name.localeCompare(b.name, 'vi'))
+      );
+    }
+  }
+  return _wardsByProvince.get(provinceCode) || [];
 };
 
-export const getWardsByProvince = (provinceCode: string) => {
-  return Object.values(vietnamData.wards)
-    .filter((ward) => ward.parent_code === provinceCode)
-    .sort((a, b) => a.name.localeCompare(b.name));
+export const getProvinceByCode = (code: string): Province | undefined => {
+  return provinces[code];
 };
 
-export const getProvinceByCode = (code: string) => {
-  return vietnamData.provinces[code];
-};
-
-export const getWardByCode = (code: string) => {
-  return vietnamData.wards[code];
+export const getWardByCode = (code: string): Ward | undefined => {
+  return wards[code];
 };

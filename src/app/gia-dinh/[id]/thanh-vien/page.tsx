@@ -1,17 +1,17 @@
 import { InlineFamilyMembersTable } from '@/components/family-members/inline-family-members-table';
 import { Button } from '@/components/ui/button';
+import { URL_GIA_DINH_DETAIL } from '@/constants/url';
 import { createClient } from '@/lib/supabase/server';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function FamilyMembersPage({ params }: any) {
+export default async function FamilyMembersPage({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const supabase = createClient();
   const {
     data: { user }
@@ -25,7 +25,7 @@ export default async function FamilyMembersPage({ params }: any) {
   const { data: household, error: householdError } = await supabase
     .from('households')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('created_by', user.id)
     .single();
 
@@ -38,7 +38,7 @@ export default async function FamilyMembersPage({ params }: any) {
   const { data: members, error: membersError } = await supabase
     .from('family_members')
     .select('*')
-    .eq('household_id', params.id)
+    .eq('household_id', id)
     .order('is_head_of_household', { ascending: false })
     .order('created_at', { ascending: true });
 
@@ -50,7 +50,7 @@ export default async function FamilyMembersPage({ params }: any) {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-4'>
-          <Link href={`/dashboard/households/${params.id}`}>
+          <Link href={URL_GIA_DINH_DETAIL(id)}>
             <Button variant='outline' size='sm'>
               <ArrowLeft className='mr-2 h-4 w-4' />
               Quay lại
@@ -67,10 +67,7 @@ export default async function FamilyMembersPage({ params }: any) {
         </div>
       </div>
 
-      <InlineFamilyMembersTable
-        members={members || []}
-        householdId={params.id}
-      />
+      <InlineFamilyMembersTable members={members || []} householdId={id} />
     </div>
   );
 }

@@ -3,16 +3,26 @@ body {
 }
 
 :root {
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-be-vietnam);
   --header-height: calc(var(--spacing) * 12 + 1px);
+
+  /* TopCV-inspired Green Color Palette */
+  --topcv-green: #00b14f;
+  --topcv-green-dark: #009643;
+  --topcv-green-light: #e8f5e9;
+  --topcv-orange: #f57c00;
+  --topcv-text: #333333;
+  --topcv-text-muted: #666666;
+  --topcv-border: #e0e0e0;
+  --topcv-bg: #f5f5f5;
 }
 
 .theme-scaled {
   @media (min-width: 1024px) {
-    --radius: 0.6rem;
+    --radius: 0.5rem;
     --text-lg: 1.05rem;
-    --text-base: 0.85rem;
-    --text-sm: 0.8rem;
+    --text-base: 0.875rem;
+    --text-sm: 0.8125rem;
     --spacing: 0.222222rem;
   }
 
@@ -48,14 +58,15 @@ body {
   }
 }
 
+/* TopCV-style Green Theme */
 .theme-green,
 .theme-green-scaled {
-  --primary: var(--color-lime-600);
-  --primary-foreground: var(--color-lime-50);
+  --primary: oklch(0.65 0.2 145);
+  --primary-foreground: oklch(0.98 0 0);
 
   @variant dark {
-    --primary: var(--color-lime-600);
-    --primary-foreground: var(--color-lime-50);
+    --primary: oklch(0.6 0.18 145);
+    --primary-foreground: oklch(0.98 0 0);
   }
 }
 

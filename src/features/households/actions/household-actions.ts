@@ -1,8 +1,8 @@
 'use server';
 
+import { URL_GIA_DINH, URL_GIA_DINH_DETAIL } from '@/constants/url';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import {
   householdSchema,
   type HouseholdFormData
@@ -36,7 +36,7 @@ export async function createHousehold(data: HouseholdFormData) {
     throw new Error(`Không thể tạo hộ gia đình: ${error.message}`);
   }
 
-  revalidatePath('/dashboard/households');
+  revalidatePath(URL_GIA_DINH);
   return household;
 }
 
@@ -64,8 +64,8 @@ export async function updateHousehold(id: string, data: HouseholdFormData) {
     throw new Error(`Không thể cập nhật hộ gia đình: ${error.message}`);
   }
 
-  revalidatePath('/dashboard/households');
-  revalidatePath(`/dashboard/households/${id}`);
+  revalidatePath(URL_GIA_DINH);
+  revalidatePath(URL_GIA_DINH_DETAIL(id));
   return household;
 }
 
@@ -89,7 +89,7 @@ export async function deleteHousehold(id: string) {
     throw new Error(`Không thể xóa hộ gia đình: ${error.message}`);
   }
 
-  revalidatePath('/dashboard/households');
+  revalidatePath(URL_GIA_DINH);
 }
 
 export async function getHousehold(id: string) {

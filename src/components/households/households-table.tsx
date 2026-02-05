@@ -3,14 +3,6 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -27,7 +19,12 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import { URL_GIA_DINH_DETAIL } from '@/constants/url';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { useHouseholdNavigation } from '@/hooks/use-household-navigation';
 import { getProvinces, getWardsByProvince } from '@/lib/vietnam-data';
 import {
@@ -49,7 +46,6 @@ import {
   Eye,
   Home,
   MapPin,
-  MoreHorizontal,
   Phone,
   Printer,
   Search,
@@ -57,9 +53,8 @@ import {
   Users,
   X
 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DeleteHouseholdDialog } from './delete-household-dialog';
 import { EditHouseholdDialog } from './edit-household-dialog';
 import { PrintHouseholdWrapper } from './print-household-wrapper';
@@ -199,8 +194,12 @@ export function HouseholdsTable({
     return household?.member_count || 0;
   };
 
-  const provinces = getProvinces();
-  const wards = provinceFilter ? getWardsByProvince(provinceFilter) : [];
+  // Memoize provinces and wards to avoid recalculation
+  const provinces = useMemo(() => getProvinces(), []);
+  const wards = useMemo(
+    () => (provinceFilter ? getWardsByProvince(provinceFilter) : []),
+    [provinceFilter]
+  );
 
   // Check if any filters are active
   const hasActiveFilters = searchText || provinceFilter || wardFilter;
@@ -218,7 +217,7 @@ export function HouseholdsTable({
           <Button
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2 font-semibold hover:bg-pink-50 hover:text-pink-700'
+            className='h-8 px-2 font-semibold hover:bg-green-100 hover:text-green-800'
           >
             <Home className='mr-2 h-4 w-4' />
             Tên hộ gia đình
@@ -228,7 +227,7 @@ export function HouseholdsTable({
       },
       cell: ({ row }) => (
         <div className='space-y-1'>
-          <div className='font-semibold text-gray-900 transition-colors group-hover:text-pink-700'>
+          <div className='font-semibold text-green-900 transition-colors group-hover:text-green-700'>
             {row.getValue('household_name')}
           </div>
           {row.original.head_of_household && (
@@ -251,7 +250,7 @@ export function HouseholdsTable({
       cell: ({ row }) => (
         <div className='space-y-1'>
           <div
-            className='max-w-xs truncate text-sm text-gray-900'
+            className='max-w-xs truncate text-sm text-green-900'
             title={row.getValue('address')}
           >
             {row.getValue('address')}
@@ -272,7 +271,7 @@ export function HouseholdsTable({
           <Button
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2 font-semibold'
+            className='h-8 px-2 font-semibold hover:bg-green-100 hover:text-green-800'
           >
             <Users className='mr-2 h-4 w-4' />
             Thành viên
@@ -288,7 +287,7 @@ export function HouseholdsTable({
               variant={count > 0 ? 'default' : 'secondary'}
               className={`px-3 py-1 font-mono text-xs ${
                 count > 0
-                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
                   : 'bg-gray-100 text-gray-600'
               }`}
             >
@@ -298,7 +297,7 @@ export function HouseholdsTable({
             {count > 5 && (
               <Badge
                 variant='secondary'
-                className='bg-blue-100 px-2 py-1 text-xs text-blue-800'
+                className='bg-amber-100 px-2 py-1 text-xs text-amber-800'
               >
                 Đông
               </Badge>
@@ -319,7 +318,7 @@ export function HouseholdsTable({
           <Button
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2 font-semibold'
+            className='h-8 px-2 font-semibold hover:bg-green-100 hover:text-green-800'
           >
             <Calendar className='mr-2 h-4 w-4' />
             Ngày tạo
@@ -333,7 +332,7 @@ export function HouseholdsTable({
 
         return (
           <div className='space-y-1'>
-            <div className='text-sm font-medium text-gray-900'>
+            <div className='text-sm font-medium text-green-900'>
               {format(date, 'dd/MM/yyyy', { locale: vi })}
             </div>
             <div className='text-muted-foreground flex items-center text-xs'>
@@ -342,7 +341,7 @@ export function HouseholdsTable({
               {isRecent && (
                 <Badge
                   variant='secondary'
-                  className='ml-2 bg-green-100 px-2 py-0 text-xs text-green-800'
+                  className='ml-2 bg-amber-100 px-2 py-0 text-xs text-amber-700'
                 >
                   Mới
                 </Badge>
@@ -359,49 +358,28 @@ export function HouseholdsTable({
         const household = row.original;
 
         return (
-          <div className='flex items-center justify-center'>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  className='h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-pink-50'
-                >
-                  <span className='sr-only'>Open menu</span>
-                  <MoreHorizontal className='h-4 w-4' />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-56'>
-                <DropdownMenuLabel className='text-sm font-semibold text-gray-900'>
-                  Thao tác cho "{household.household_name}"
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => openHouseholdDrawer(household.id)}
-                  className='flex cursor-pointer items-center hover:bg-pink-50 hover:text-pink-700'
-                >
-                  <Users className='mr-2 h-4 w-4' />
-                  <div>
-                    <div className='font-medium'>Xem thành viên</div>
-                    <div className='text-muted-foreground text-xs'>
-                      Quản lý {getMemberCount(household)} thành viên
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href={URL_GIA_DINH_DETAIL(household.id)}
-                    className='flex items-center hover:bg-blue-50 hover:text-blue-700'
+          <TooltipProvider delayDuration={100}>
+            <div className='flex items-center justify-center gap-1'>
+              {/* View - opens drawer */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8 cursor-pointer text-green-500 hover:bg-green-100 hover:text-green-800'
+                    onClick={() => openHouseholdDrawer(household.id)}
                   >
-                    <Eye className='mr-2 h-4 w-4' />
-                    <div>
-                      <div className='font-medium'>Xem chi tiết</div>
-                      <div className='text-muted-foreground text-xs'>
-                        Thông tin đầy đủ
-                      </div>
-                    </div>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                    <Eye className='h-4 w-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p>Xem chi tiết</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Print */}
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <PrintHouseholdWrapper
                     householdId={household.id}
                     householdName={household.household_name}
@@ -409,52 +387,60 @@ export function HouseholdsTable({
                     phone={household.phone}
                     headOfHousehold={household.head_of_household}
                   >
-                    <div className='flex w-full cursor-pointer items-center hover:bg-green-50 hover:text-green-700'>
-                      <Printer className='mr-2 h-4 w-4' />
-                      <div>
-                        <div className='font-medium'>In danh sách</div>
-                        <div className='text-muted-foreground text-xs'>
-                          In thông tin {getMemberCount(household)} thành viên
-                        </div>
-                      </div>
-                    </div>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 cursor-pointer text-green-500 hover:bg-amber-50 hover:text-amber-600'
+                    >
+                      <Printer className='h-4 w-4' />
+                    </Button>
                   </PrintHouseholdWrapper>
-                </DropdownMenuItem>
-                <EditHouseholdDialog household={household}>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    className='hover:bg-amber-50 hover:text-amber-700'
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p>In danh sách</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Edit */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <EditHouseholdDialog household={household}>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 cursor-pointer text-green-500 hover:bg-amber-50 hover:text-amber-600'
+                    >
+                      <Edit className='h-4 w-4' />
+                    </Button>
+                  </EditHouseholdDialog>
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p>Chỉnh sửa</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Delete */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DeleteHouseholdDialog
+                    householdId={household.id}
+                    householdName={household.household_name}
                   >
-                    <Edit className='mr-2 h-4 w-4' />
-                    <div>
-                      <div className='font-medium'>Chỉnh sửa</div>
-                      <div className='text-muted-foreground text-xs'>
-                        Cập nhật thông tin
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                </EditHouseholdDialog>
-                <DropdownMenuSeparator />
-                <DeleteHouseholdDialog
-                  householdId={household.id}
-                  householdName={household.household_name}
-                >
-                  <DropdownMenuItem
-                    className='text-red-600 hover:bg-red-50 focus:text-red-600'
-                    onSelect={(e) => e.preventDefault()}
-                  >
-                    <Trash2 className='mr-2 h-4 w-4' />
-                    <div>
-                      <div className='font-medium'>Xóa</div>
-                      <div className='text-xs opacity-75'>
-                        Không thể hoàn tác
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                </DeleteHouseholdDialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 cursor-pointer text-green-500 hover:bg-red-50 hover:text-red-600'
+                    >
+                      <Trash2 className='h-4 w-4' />
+                    </Button>
+                  </DeleteHouseholdDialog>
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p>Xóa</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         );
       }
     }
@@ -479,40 +465,38 @@ export function HouseholdsTable({
   });
 
   return (
-    <div className='space-y-6'>
+    <div className='overflow-hidden rounded-xl border border-green-200 bg-white shadow-sm'>
       {/* Search and Filters */}
-      <div className='space-y-4'>
+      <div className='border-b border-green-100 bg-green-50/30 p-4'>
         {/* Search and Filters Row */}
         <div className='flex flex-col gap-4 sm:flex-row'>
           {/* Search by Name/Phone */}
-          <div className='flex'>
-            <div className='relative w-[450px]'>
-              <Search className='text-muted-foreground absolute top-2.5 left-3 h-4 w-4' />
-              <Input
-                placeholder='Tìm kiếm theo tên hộ gia đình, chủ hộ, số điện thoại...'
-                value={searchText}
-                onChange={(event) => handleSearchChange(event.target.value)}
-                className='border-gray-200 pr-10 pl-10 focus:border-pink-300 focus:ring-pink-200'
-              />
-              {searchText && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='absolute top-1.5 right-1.5 h-6 w-6 p-0 text-gray-400 hover:text-gray-600'
-                  onClick={() => handleSearchChange('')}
-                >
-                  <X className='h-3 w-3' />
-                </Button>
-              )}
-            </div>
+          <div className='relative flex-1'>
+            <Search className='text-muted-foreground absolute top-2.5 left-3 h-4 w-4' />
+            <Input
+              placeholder='Tìm kiếm theo tên hộ gia đình, chủ hộ, số điện thoại...'
+              value={searchText}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              className='border-green-200 bg-white pr-10 pl-10 focus:border-green-500 focus:ring-green-200'
+            />
+            {searchText && (
+              <Button
+                variant='ghost'
+                size='sm'
+                className='absolute top-1.5 right-1.5 h-6 w-6 cursor-pointer p-0 text-gray-400 hover:text-gray-600'
+                onClick={() => handleSearchChange('')}
+              >
+                <X className='h-3 w-3' />
+              </Button>
+            )}
           </div>
 
           {/* Location Filters */}
           <div className='flex gap-3'>
             <Select value={provinceFilter} onValueChange={handleProvinceChange}>
-              <SelectTrigger className='w-[250px] border-gray-200 focus:border-pink-300 focus:ring-pink-200'>
-                <MapPin className='mr-2 h-4 w-4 text-gray-400' />
-                <SelectValue placeholder='Chọn tỉnh/thành phố' />
+              <SelectTrigger className='w-[200px] border-green-200 bg-white focus:border-green-500 focus:ring-green-200'>
+                <MapPin className='mr-2 h-4 w-4 text-green-600' />
+                <SelectValue placeholder='Tỉnh/thành phố' />
               </SelectTrigger>
               <SelectContent>
                 {provinces.map((province) => (
@@ -528,9 +512,9 @@ export function HouseholdsTable({
               onValueChange={handleWardChange}
               disabled={!provinceFilter}
             >
-              <SelectTrigger className='w-[250px] border-gray-200 focus:border-pink-300 focus:ring-pink-200'>
-                <MapPin className='mr-2 h-4 w-4 text-gray-400' />
-                <SelectValue placeholder='Chọn phường/xã' />
+              <SelectTrigger className='w-[200px] border-green-200 bg-white focus:border-green-500 focus:ring-green-200'>
+                <MapPin className='mr-2 h-4 w-4 text-green-600' />
+                <SelectValue placeholder='Phường/xã' />
               </SelectTrigger>
               <SelectContent>
                 {wards.map((ward) => (
@@ -544,217 +528,192 @@ export function HouseholdsTable({
         </div>
 
         {/* Filter Actions and Results */}
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            {hasActiveFilters && (
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={clearFilters}
-                className='text-muted-foreground hover:text-foreground hover:bg-gray-100'
-              >
-                <X className='mr-2 h-4 w-4' />
-                Xóa bộ lọc
-              </Button>
-            )}
+        {(hasActiveFilters || totalCount > 0) && (
+          <div className='mt-3 flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              {hasActiveFilters && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={clearFilters}
+                  className='h-7 cursor-pointer px-2 text-xs text-green-700 hover:bg-green-100 hover:text-green-800'
+                >
+                  <X className='mr-1 h-3 w-3' />
+                  Xóa bộ lọc
+                </Button>
+              )}
 
-            {/* Active filter badges */}
-            <div className='flex gap-2'>
+              {/* Active filter badges */}
               {searchText && (
                 <Badge
                   variant='secondary'
-                  className='bg-pink-100 text-xs text-pink-800'
+                  className='flex cursor-pointer items-center gap-1 bg-green-100 px-2 py-0.5 text-xs text-green-800 transition-colors hover:bg-green-200'
+                  onClick={() => handleSearchChange('')}
                 >
-                  Tìm kiếm: "{searchText}"
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='ml-2 h-3 w-3 p-0 hover:bg-pink-200'
-                    onClick={() => handleSearchChange('')}
-                  >
-                    <X className='h-2 w-2' />
-                  </Button>
+                  "{searchText}"
+                  <X className='h-3 w-3' />
                 </Badge>
               )}
               {provinceFilter && (
                 <Badge
                   variant='secondary'
-                  className='bg-blue-100 text-xs text-blue-800'
+                  className='flex cursor-pointer items-center gap-1 bg-amber-100 px-2 py-0.5 text-xs text-amber-800 transition-colors hover:bg-amber-200'
+                  onClick={() => handleProvinceChange('')}
                 >
-                  Tỉnh:{' '}
                   {provinces.find((p) => p.code === provinceFilter)?.name ||
                     provinceFilter}
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='ml-2 h-3 w-3 p-0 hover:bg-blue-200'
-                    onClick={() => handleProvinceChange('')}
-                  >
-                    <X className='h-2 w-2' />
-                  </Button>
+                  <X className='h-3 w-3' />
                 </Badge>
               )}
               {wardFilter && (
                 <Badge
                   variant='secondary'
-                  className='bg-green-100 text-xs text-green-800'
+                  className='flex cursor-pointer items-center gap-1 bg-green-100 px-2 py-0.5 text-xs text-green-800 transition-colors hover:bg-green-200'
+                  onClick={() => handleWardChange('')}
                 >
-                  Phường/Xã:{' '}
                   {wards.find((w) => w.code === wardFilter)?.name || wardFilter}
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    className='ml-2 h-3 w-3 p-0 hover:bg-green-200'
-                    onClick={() => handleWardChange('')}
-                  >
-                    <X className='h-2 w-2' />
-                  </Button>
+                  <X className='h-3 w-3' />
                 </Badge>
               )}
             </div>
-          </div>
 
-          <div className='text-muted-foreground flex items-center text-sm'>
-            <Home className='mr-1 h-4 w-4' />
-            {totalCount > 0
-              ? `${startIndex}-${endIndex} trên ${totalCount}`
-              : '0'}{' '}
-            hộ gia đình
+            <div className='text-xs text-green-700/70'>
+              {totalCount > 0
+                ? `${startIndex}-${endIndex} / ${totalCount}`
+                : '0'}{' '}
+              hộ gia đình
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Table */}
-      <div className='overflow-hidden rounded-lg border border-gray-200 shadow-sm'>
-        <Table>
-          <TableHeader className='bg-gray-50'>
-            {table.getHeaderGroups().map((headerGroup) => (
+      <Table>
+        <TableHeader className='bg-green-50/50'>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow
+              key={headerGroup.id}
+              className='border-b border-green-100'
+            >
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead
+                    key={header.id}
+                    className='h-12 font-semibold text-green-900'
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row, index) => (
               <TableRow
-                key={headerGroup.id}
-                className='border-b border-gray-200'
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+                className={`group cursor-pointer border-b border-green-50 transition-colors duration-150 hover:bg-green-50/50 ${
+                  index % 2 === 0 ? 'bg-white' : 'bg-amber-50/20'
+                }`}
               >
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className='h-12 font-semibold text-gray-700'
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className='px-4 py-4'>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className='text-muted-foreground h-48 text-center'
+              >
+                {hasActiveFilters ? (
+                  <div className='flex flex-col items-center justify-center space-y-4'>
+                    <div className='flex h-16 w-16 items-center justify-center rounded-full bg-green-100'>
+                      <Search className='h-7 w-7 text-green-600' />
+                    </div>
+                    <div className='space-y-1'>
+                      <p className='text-base font-semibold text-green-900'>
+                        Không tìm thấy kết quả
+                      </p>
+                      <p className='max-w-sm text-sm text-green-700/70'>
+                        Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc để tìm hộ
+                        gia đình phù hợp
+                      </p>
+                    </div>
+                    <Button
+                      variant='outline'
+                      onClick={clearFilters}
+                      className='mt-2 cursor-pointer border-green-200 text-green-700 transition-colors hover:bg-green-50'
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={`group hover:from-pink-25 border-b border-gray-100 transition-colors hover:bg-gradient-to-r hover:to-transparent ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
-                  }`}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className='px-4 py-4'>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='text-muted-foreground h-32 text-center'
-                >
-                  {hasActiveFilters ? (
-                    <div className='space-y-4'>
-                      <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
-                        <Search className='h-6 w-6 text-gray-400' />
-                      </div>
-                      <div>
-                        <p className='text-base font-medium text-gray-900'>
-                          Không tìm thấy hộ gia đình nào
-                        </p>
-                        <p className='text-sm text-gray-500'>
-                          Thử điều chỉnh bộ lọc hoặc tìm kiếm khác
-                        </p>
-                      </div>
-                      <Button
-                        variant='outline'
-                        onClick={clearFilters}
-                        className='mt-4 border-pink-200 text-pink-700 hover:bg-pink-50'
-                      >
-                        <X className='mr-2 h-4 w-4' />
-                        Xóa bộ lọc
-                      </Button>
+                      <X className='mr-2 h-4 w-4' />
+                      Xóa bộ lọc
+                    </Button>
+                  </div>
+                ) : (
+                  <div className='flex flex-col items-center justify-center space-y-4'>
+                    <div className='flex h-16 w-16 items-center justify-center rounded-full bg-green-100'>
+                      <Home className='h-7 w-7 text-green-600' />
                     </div>
-                  ) : (
-                    <div className='space-y-4'>
-                      <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
-                        <Home className='h-6 w-6 text-gray-400' />
-                      </div>
-                      <div>
-                        <p className='text-base font-medium text-gray-900'>
-                          Chưa có hộ gia đình nào
-                        </p>
-                        <p className='text-sm text-gray-500'>
-                          Thêm hộ gia đình đầu tiên để bắt đầu quản lý
-                        </p>
-                      </div>
+                    <div className='space-y-1'>
+                      <p className='text-base font-semibold text-green-900'>
+                        Chưa có hộ gia đình nào
+                      </p>
+                      <p className='max-w-sm text-sm text-green-700/70'>
+                        Bắt đầu bằng cách thêm hộ gia đình đầu tiên để quản lý
+                        thông tin
+                      </p>
                     </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  </div>
+                )}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className='flex items-center justify-between rounded-lg border bg-gray-50 px-6 py-4'>
-          <div className='text-muted-foreground flex items-center text-sm'>
-            <Calendar className='mr-1 h-4 w-4' />
+        <div className='flex items-center justify-between border-t border-green-100 bg-green-50/30 px-4 py-3'>
+          <div className='text-xs text-green-700/70'>
             Trang {currentPage} / {totalPages}
           </div>
-          <div className='flex items-center space-x-2'>
+          <div className='flex items-center space-x-1'>
             {/* Previous page button */}
             <Button
-              variant='outline'
+              variant='ghost'
               size='sm'
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage <= 1}
-              className='border-pink-200 text-pink-700 hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-50'
+              className='h-8 cursor-pointer px-3 text-xs text-green-700 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Trước
             </Button>
 
             {/* Page numbers */}
-            <div className='flex items-center space-x-1'>
+            <div className='flex items-center'>
               {/* Show first page */}
               {currentPage > 3 && (
                 <>
                   <Button
-                    variant='outline'
+                    variant='ghost'
                     size='sm'
                     onClick={() => handlePageChange(1)}
-                    className='border-pink-200 text-pink-700 hover:bg-pink-50'
+                    className='h-8 w-8 cursor-pointer text-xs text-green-700 hover:bg-green-100'
                   >
                     1
                   </Button>
                   {currentPage > 4 && (
-                    <span className='text-gray-400'>...</span>
+                    <span className='px-1 text-xs text-green-500'>...</span>
                   )}
                 </>
               )}
@@ -768,14 +727,14 @@ export function HouseholdsTable({
                 return (
                   <Button
                     key={pageNum}
-                    variant={pageNum === currentPage ? 'default' : 'outline'}
+                    variant='ghost'
                     size='sm'
                     onClick={() => handlePageChange(pageNum)}
-                    className={
+                    className={`h-8 w-8 cursor-pointer text-xs ${
                       pageNum === currentPage
-                        ? 'bg-pink-600 text-white hover:bg-pink-700'
-                        : 'border-pink-200 text-pink-700 hover:bg-pink-50'
-                    }
+                        ? 'bg-green-700 text-white hover:bg-green-800'
+                        : 'text-green-700 hover:bg-green-100'
+                    }`}
                   >
                     {pageNum}
                   </Button>
@@ -786,13 +745,13 @@ export function HouseholdsTable({
               {currentPage < totalPages - 2 && (
                 <>
                   {currentPage < totalPages - 3 && (
-                    <span className='text-gray-400'>...</span>
+                    <span className='px-1 text-xs text-green-500'>...</span>
                   )}
                   <Button
-                    variant='outline'
+                    variant='ghost'
                     size='sm'
                     onClick={() => handlePageChange(totalPages)}
-                    className='border-pink-200 text-pink-700 hover:bg-pink-50'
+                    className='h-8 w-8 cursor-pointer text-xs text-green-700 hover:bg-green-100'
                   >
                     {totalPages}
                   </Button>
@@ -802,11 +761,11 @@ export function HouseholdsTable({
 
             {/* Next page button */}
             <Button
-              variant='outline'
+              variant='ghost'
               size='sm'
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className='border-pink-200 text-pink-700 hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-50'
+              className='h-8 cursor-pointer px-3 text-xs text-green-700 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50'
             >
               Sau
             </Button>

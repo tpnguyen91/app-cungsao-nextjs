@@ -1,5 +1,6 @@
 'use server';
 
+import { URL_GIA_DINH_DETAIL, URL_GIA_DINH_THANH_VIEN } from '@/constants/url';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import {
@@ -64,8 +65,8 @@ export async function createFamilyMember(
       .neq('id', member.id);
   }
 
-  revalidatePath(`/dashboard/households/${householdId}`);
-  revalidatePath(`/dashboard/households/${householdId}/members`);
+  revalidatePath(URL_GIA_DINH_DETAIL(householdId));
+  revalidatePath(URL_GIA_DINH_THANH_VIEN(householdId));
   return member;
 }
 
@@ -121,8 +122,8 @@ export async function updateFamilyMember(
       .neq('id', member.id);
   }
 
-  revalidatePath(`/dashboard/households/${member.household_id}`);
-  revalidatePath(`/dashboard/households/${member.household_id}/members`);
+  revalidatePath(URL_GIA_DINH_DETAIL(member.household_id));
+  revalidatePath(URL_GIA_DINH_THANH_VIEN(member.household_id));
   return member;
 }
 
@@ -153,8 +154,8 @@ export async function deleteFamilyMember(id: string) {
     throw new Error(`Không thể xóa thành viên: ${error.message}`);
   }
 
-  revalidatePath(`/dashboard/households/${member.household_id}`);
-  revalidatePath(`/dashboard/households/${member.household_id}/members`);
+  revalidatePath(URL_GIA_DINH_DETAIL(member.household_id));
+  revalidatePath(URL_GIA_DINH_THANH_VIEN(member.household_id));
 }
 
 export async function getFamilyMembers(householdId: string) {

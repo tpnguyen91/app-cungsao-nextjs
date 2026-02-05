@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { URL_GIA_DINH, URL_GIA_DINH_THANH_VIEN } from '@/constants/url';
 import { createClient } from '@/lib/supabase/server';
 import { getProvinceByCode, getWardByCode } from '@/lib/vietnam-data';
 import { format } from 'date-fns';
@@ -16,19 +17,20 @@ import { ArrowLeft, Calendar, Crown, Edit, MapPin, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default async function HouseholdDetailPage({ params }: any) {
+export default async function HouseholdDetailPage({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const supabase = createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
 
+  // Layout already handles auth redirect, but double check
   if (!user) {
+    console.error('No user found in household detail page');
     notFound();
   }
 
@@ -45,12 +47,24 @@ export default async function HouseholdDetailPage({ params }: any) {
       family_members(*)
     `
     )
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('created_by', user.id)
     .single();
 
-  if (error || !household) {
-    console.error('Household not found:', error);
+  if (error) {
+    console.error(
+      'Error fetching household:',
+      error.message,
+      'ID:',
+      id,
+      'User:',
+      user.id
+    );
+    notFound();
+  }
+
+  if (!household) {
+    console.error('Household not found for ID:', id);
     notFound();
   }
 
@@ -107,7 +121,7 @@ export default async function HouseholdDetailPage({ params }: any) {
       {/* Header */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-4'>
-          <Link href='/dashboard/households'>
+          <Link href={URL_GIA_DINH}>
             <Button variant='outline' size='sm'>
               <ArrowLeft className='mr-2 h-4 w-4' />
               Quay lại danh sách
@@ -130,7 +144,7 @@ export default async function HouseholdDetailPage({ params }: any) {
               Chỉnh sửa
             </Button>
           </EditHouseholdDialog>
-          <Link href={`/dashboard/households/${params.id}/members`}>
+          <Link href={URL_GIA_DINH_THANH_VIEN(id)}>
             <Button>
               <Users className='mr-2 h-4 w-4' />
               Quản lý thành viên
@@ -252,7 +266,7 @@ export default async function HouseholdDetailPage({ params }: any) {
               </p>
             )}
             <div className='mt-4'>
-              <Link href={`/dashboard/households/${params.id}/members`}>
+              <Link href={URL_GIA_DINH_THANH_VIEN(id)}>
                 <Button variant='outline' className='w-full'>
                   <Users className='mr-2 h-4 w-4' />
                   Quản lý thành viên
@@ -299,14 +313,6 @@ export default async function HouseholdDetailPage({ params }: any) {
                 Chưa có lịch cúng nào được ghi nhận.
               </p>
             )}
-            <div className='mt-4'>
-              <Link href='/dashboard/worship'>
-                <Button variant='outline' className='w-full'>
-                  <Calendar className='mr-2 h-4 w-4' />
-                  Xem lịch cúng
-                </Button>
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>
