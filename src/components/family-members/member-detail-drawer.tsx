@@ -162,10 +162,10 @@ export function MemberDetailDrawer({
       >
         <div className='flex h-full flex-col'>
           {/* Header */}
-          <div className='flex items-center justify-between border-b bg-gradient-to-r from-blue-50 to-indigo-50 p-6'>
+          <div className='flex items-center justify-between border-b border-slate-200 bg-slate-50 p-6'>
             <div className='flex items-center space-x-4'>
               <Avatar className='h-16 w-16'>
-                <AvatarFallback className='bg-blue-100 text-xl font-semibold text-blue-600'>
+                <AvatarFallback className='bg-primary/10 text-primary text-xl font-semibold'>
                   {member.full_name
                     .split(' ')
                     .map((n) => n[0])
@@ -203,7 +203,7 @@ export function MemberDetailDrawer({
                   variant='outline'
                   size='sm'
                   onClick={() => setIsEditing(true)}
-                  className='hover:bg-blue-50'
+                  className='hover:bg-primary/5 cursor-pointer border-slate-200'
                 >
                   <Edit2 className='mr-2 h-4 w-4' />
                   Chỉnh sửa
@@ -213,12 +213,17 @@ export function MemberDetailDrawer({
                   <Button
                     size='sm'
                     onClick={handleSave}
-                    className='bg-green-600 hover:bg-green-700'
+                    className='bg-primary hover:bg-primary/90 cursor-pointer'
                   >
                     <Save className='mr-2 h-4 w-4' />
                     Lưu
                   </Button>
-                  <Button variant='outline' size='sm' onClick={handleCancel}>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={handleCancel}
+                    className='cursor-pointer border-slate-200'
+                  >
                     <X className='mr-2 h-4 w-4' />
                     Hủy
                   </Button>
@@ -229,7 +234,7 @@ export function MemberDetailDrawer({
                 variant='ghost'
                 size='sm'
                 onClick={onClose}
-                className='hover:bg-red-50 hover:text-red-600'
+                className='cursor-pointer hover:bg-red-50 hover:text-red-600'
               >
                 <X className='h-5 w-5' />
               </Button>
@@ -240,8 +245,8 @@ export function MemberDetailDrawer({
           <div className='flex-1 space-y-8 overflow-y-auto p-6'>
             {/* Basic Information */}
             <div className='space-y-6'>
-              <div className='flex items-center space-x-2 text-lg font-semibold text-gray-800'>
-                <User className='h-5 w-5 text-blue-500' />
+              <div className='flex items-center space-x-2 text-lg font-semibold text-slate-800'>
+                <User className='text-primary h-5 w-5' />
                 <span>Thông tin cơ bản</span>
               </div>
 

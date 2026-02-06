@@ -1,5 +1,6 @@
 import { CreateHouseholdDialog } from '@/components/households/create-household-dialog';
 import { HouseholdsTable } from '@/components/households/households-table';
+import { LogoutButton } from '@/components/layout/logout-button';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
 import { Home, Plus } from 'lucide-react';
@@ -18,7 +19,7 @@ export default async function HouseholdsPage({
   searchParams
 }: HouseholdsPageProps) {
   const params = await searchParams;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Extract and parse search parameters
   const searchText = params.search || '';
@@ -107,30 +108,33 @@ export default async function HouseholdsPage({
   }
 
   return (
-    <div className='min-h-screen bg-amber-50/30 p-6'>
-      <div className='mx-auto max-w-7xl space-y-5'>
+    <div className='bg-background flex h-screen flex-col p-6'>
+      <div className='mx-auto flex w-full max-w-7xl flex-1 flex-col gap-5 overflow-hidden'>
         {/* Header */}
-        <div className='flex items-center justify-between'>
+        <div className='flex shrink-0 items-center justify-between'>
           <div className='flex items-center gap-3'>
-            <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-green-100'>
-              <Home className='h-5 w-5 text-green-700' />
+            <div className='bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg'>
+              <Home className='text-primary h-5 w-5' />
             </div>
             <div>
-              <h1 className='text-lg font-semibold text-green-900'>
+              <h1 className='text-foreground text-lg font-semibold'>
                 Quản lý hộ gia đình
               </h1>
-              <p className='text-sm text-green-700/70'>
+              <p className='text-muted-foreground text-sm'>
                 Theo dõi và quản lý thông tin các hộ
               </p>
             </div>
           </div>
 
-          <CreateHouseholdDialog>
-            <Button className='cursor-pointer gap-2 bg-green-700 px-4 shadow-sm hover:bg-green-800'>
-              <Plus className='h-4 w-4' />
-              Thêm hộ gia đình
-            </Button>
-          </CreateHouseholdDialog>
+          <div className='flex items-center gap-2'>
+            <LogoutButton />
+            <CreateHouseholdDialog>
+              <Button className='bg-primary hover:bg-primary/90 cursor-pointer gap-2 px-4 shadow-sm'>
+                <Plus className='h-4 w-4' />
+                Thêm hộ gia đình
+              </Button>
+            </CreateHouseholdDialog>
+          </div>
         </div>
 
         {/* Table */}

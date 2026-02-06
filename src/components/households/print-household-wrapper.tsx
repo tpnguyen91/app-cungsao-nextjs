@@ -69,7 +69,7 @@ export function PrintHouseholdWrapper({
     <PrintHouseholdMembers household={household} members={members}>
       <div onClick={loadMembers}>
         {children || (
-          <div className='flex w-full cursor-pointer items-center hover:bg-green-50 hover:text-green-700'>
+          <div className='hover:bg-primary/5 hover:text-primary flex w-full cursor-pointer items-center'>
             {isLoading ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />

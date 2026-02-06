@@ -62,7 +62,6 @@ export function HouseholdDetailDrawer({
     }
   }, [household]);
 
-  // Reset editing state when drawer closes
   useEffect(() => {
     if (!isOpen) {
       setIsEditing(false);
@@ -115,27 +114,27 @@ export function HouseholdDetailDrawer({
         {isLoading && (
           <div className='absolute inset-0 z-10 flex items-center justify-center bg-white/80'>
             <div className='flex flex-col items-center gap-3'>
-              <Loader2 className='h-8 w-8 animate-spin text-emerald-500' />
-              <span className='text-sm text-gray-500'>Đang tải...</span>
+              <Loader2 className='text-primary h-8 w-8 animate-spin' />
+              <span className='text-sm text-slate-500'>Đang tải...</span>
             </div>
           </div>
         )}
 
         <div className='flex h-full flex-col'>
           {/* Header */}
-          <div className='flex items-center justify-between border-b bg-gradient-to-r from-emerald-50 to-green-50 p-4'>
+          <div className='flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4'>
             <div className='flex items-center space-x-3'>
-              <Avatar className='h-11 w-11 ring-2 ring-emerald-100'>
-                <AvatarFallback className='bg-emerald-100 text-[#00B14F]'>
+              <Avatar className='ring-primary/20 h-11 w-11 ring-2'>
+                <AvatarFallback className='bg-primary/10 text-primary'>
                   <Home className='h-5 w-5' />
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h2 className='text-lg font-semibold text-gray-800'>
+                <h2 className='text-lg font-semibold text-slate-800'>
                   {household?.household_name || 'Đang tải...'}
                 </h2>
                 <div className='mt-0.5 flex items-center space-x-2'>
-                  <Badge className='bg-emerald-100 text-[#00B14F]'>
+                  <Badge className='bg-primary/10 text-primary'>
                     <Users className='mr-1 h-3 w-3' />
                     {getMemberCount()} thành viên
                   </Badge>
@@ -149,7 +148,7 @@ export function HouseholdDetailDrawer({
                   variant='outline'
                   size='sm'
                   onClick={() => setIsEditing(true)}
-                  className='cursor-pointer border-emerald-200 text-[#00B14F] hover:bg-emerald-50'
+                  className='text-primary hover:bg-primary/5 cursor-pointer border-slate-200'
                 >
                   <Edit2 className='mr-1.5 h-4 w-4' />
                   Sửa
@@ -159,7 +158,7 @@ export function HouseholdDetailDrawer({
                   <Button
                     size='sm'
                     onClick={handleSave}
-                    className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
+                    className='bg-primary hover:bg-primary/90 cursor-pointer'
                   >
                     <Save className='mr-1.5 h-4 w-4' />
                     Lưu
@@ -168,7 +167,7 @@ export function HouseholdDetailDrawer({
                     variant='outline'
                     size='sm'
                     onClick={handleCancel}
-                    className='cursor-pointer'
+                    className='cursor-pointer border-slate-200'
                   >
                     <X className='mr-1.5 h-4 w-4' />
                     Hủy
@@ -180,7 +179,7 @@ export function HouseholdDetailDrawer({
                 variant='ghost'
                 size='sm'
                 onClick={onClose}
-                className='cursor-pointer text-gray-500 hover:bg-red-50 hover:text-red-600'
+                className='cursor-pointer text-slate-500 hover:bg-red-50 hover:text-red-600'
               >
                 <X className='h-4 w-4' />
               </Button>
@@ -191,7 +190,7 @@ export function HouseholdDetailDrawer({
           {household && (
             <div className='flex-1 overflow-y-auto'>
               {/* Compact Household Information */}
-              <div className='space-y-3 border-b bg-gray-50/50 p-4'>
+              <div className='space-y-3 border-b border-slate-100 bg-white p-4'>
                 <div className='grid grid-cols-4 gap-3 text-sm'>
                   {/* Address */}
                   <div className='flex items-center space-x-2'>
@@ -206,10 +205,10 @@ export function HouseholdDetailDrawer({
                           }))
                         }
                         placeholder='Địa chỉ'
-                        className='h-8 text-sm'
+                        className='h-8 border-slate-200 text-sm'
                       />
                     ) : (
-                      <span className='truncate text-gray-700'>
+                      <span className='truncate text-slate-700'>
                         {household.address || 'Chưa có địa chỉ'}
                       </span>
                     )}
@@ -228,17 +227,17 @@ export function HouseholdDetailDrawer({
                           }))
                         }
                         placeholder='Số điện thoại'
-                        className='h-8 text-sm'
+                        className='h-8 border-slate-200 text-sm'
                       />
                     ) : (
-                      <span className='text-gray-700'>
+                      <span className='text-slate-700'>
                         {household.phone || 'Chưa có SĐT'}
                       </span>
                     )}
                   </div>
 
                   {/* System info */}
-                  <div className='col-span-2 flex items-center justify-end gap-4 text-xs text-gray-500'>
+                  <div className='col-span-2 flex items-center justify-end gap-4 text-xs text-slate-500'>
                     <span>
                       Tạo:{' '}
                       {new Date(household.created_at).toLocaleDateString(
@@ -257,7 +256,7 @@ export function HouseholdDetailDrawer({
                 {/* Notes */}
                 {(household.notes || isEditing) && (
                   <div className='space-y-2'>
-                    <label className='text-xs font-medium text-gray-600'>
+                    <label className='text-xs font-medium text-slate-600'>
                       Ghi chú
                     </label>
                     {isEditing ? (
@@ -271,10 +270,10 @@ export function HouseholdDetailDrawer({
                         }
                         placeholder='Ghi chú về hộ gia đình...'
                         rows={2}
-                        className='text-sm'
+                        className='border-slate-200 text-sm'
                       />
                     ) : (
-                      <p className='rounded bg-white px-2 py-1 text-sm text-gray-700'>
+                      <p className='rounded bg-slate-50 px-2 py-1 text-sm text-slate-700'>
                         {household.notes}
                       </p>
                     )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -22,12 +22,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   householdSchema,
   type HouseholdFormData
 } from '@/features/households/schemas/household-schema';
 import { updateHousehold } from '@/features/households/actions/household-actions';
+import { getProvinces, getWardsByProvince } from '@/lib/vietnam-data';
 
 interface Household {
   id: string;
@@ -48,16 +56,35 @@ export function EditHouseholdDialog({
 }: EditHouseholdDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const provinces = useMemo(() => getProvinces(), []);
 
   const form = useForm<HouseholdFormData>({
     resolver: zodResolver(householdSchema),
     defaultValues: {
-      household_name: household.household_name,
-      address: household.address,
-      province_id: household.province_id || '',
-      ward_id: household.ward_id || ''
+      household_name: '',
+      address: '',
+      province_id: '',
+      ward_id: ''
     }
   });
+
+  // Reset form when dialog opens with household data
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        household_name: household.household_name || '',
+        address: household.address || '',
+        province_id: household.province_id || '',
+        ward_id: household.ward_id || ''
+      });
+    }
+  }, [open, household, form]);
+
+  const selectedProvinceId = form.watch('province_id');
+  const wards = useMemo(
+    () => (selectedProvinceId ? getWardsByProvince(selectedProvinceId) : []),
+    [selectedProvinceId]
+  );
 
   const onSubmit = async (data: HouseholdFormData) => {
     try {
@@ -99,15 +126,86 @@ export function EditHouseholdDialog({
                 </FormItem>
               )}
             />
+
+            <div className='grid grid-cols-2 gap-3'>
+              <FormField
+                control={form.control}
+                name='province_id'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tỉnh/Thành phố</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue('ward_id', '');
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger className='cursor-pointer'>
+                          <SelectValue placeholder='Chọn tỉnh/thành phố' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {provinces.map((p) => (
+                          <SelectItem
+                            key={p.code}
+                            value={p.code}
+                            className='cursor-pointer'
+                          >
+                            {p.name_with_type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='ward_id'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phường/Xã</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={!selectedProvinceId}
+                    >
+                      <FormControl>
+                        <SelectTrigger className='cursor-pointer'>
+                          <SelectValue placeholder='Chọn phường/xã' />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {wards.map((w) => (
+                          <SelectItem
+                            key={w.code}
+                            value={w.code}
+                            className='cursor-pointer'
+                          >
+                            {w.name_with_type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name='address'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Địa chỉ</FormLabel>
+                  <FormLabel>Địa chỉ chi tiết</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder='123 Đường ABC, Quận 1, TP.HCM'
+                      placeholder='Số nhà, tên đường...'
                       className='resize-none'
                       {...field}
                     />
@@ -116,15 +214,21 @@ export function EditHouseholdDialog({
                 </FormItem>
               )}
             />
+
             <div className='flex justify-end space-x-2'>
               <Button
                 type='button'
                 variant='outline'
                 onClick={() => setOpen(false)}
+                className='cursor-pointer'
               >
                 Hủy
               </Button>
-              <Button type='submit' disabled={form.formState.isSubmitting}>
+              <Button
+                type='submit'
+                disabled={form.formState.isSubmitting}
+                className='cursor-pointer'
+              >
                 {form.formState.isSubmitting ? 'Đang cập nhật...' : 'Cập nhật'}
               </Button>
             </div>

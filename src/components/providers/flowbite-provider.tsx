@@ -18,7 +18,7 @@ const customTheme: CustomFlowbiteTheme = {
         'bg-yellow-400 hover:bg-yellow-500 focus:ring-yellow-300 text-gray-900 border border-transparent',
       info: 'bg-cyan-600 hover:bg-cyan-700 focus:ring-cyan-300 text-white border border-transparent',
       light:
-        'bg-gray-200 hover:bg-gray-300 focus:ring-gray-300 text-gray-900 border border-gray-300'
+        'bg-gray-200 hover:bg-gray-300 focus:ring-gray-300 text-gray-900 border border-gray-200'
     },
     outline: {
       color: {
@@ -35,7 +35,7 @@ const customTheme: CustomFlowbiteTheme = {
   },
   card: {
     root: {
-      base: 'flex rounded-lg border border-gray-200 bg-white shadow-sm',
+      base: 'flex rounded-lg border border-gray-100 bg-white shadow-sm',
       children: 'flex h-full flex-col justify-center gap-4 p-6',
       horizontal: {
         off: 'flex-col',
@@ -46,7 +46,7 @@ const customTheme: CustomFlowbiteTheme = {
   },
   navbar: {
     root: {
-      base: 'bg-white border-b border-gray-200 px-4 py-3',
+      base: 'bg-white border-b border-gray-100 px-4 py-3',
       rounded: {
         on: 'rounded-lg',
         off: ''
@@ -88,7 +88,7 @@ const customTheme: CustomFlowbiteTheme = {
         off: 'w-64'
       },
       inner:
-        'h-full overflow-y-auto overflow-x-hidden bg-white border-r border-gray-200 px-3 py-4'
+        'h-full overflow-y-auto overflow-x-hidden bg-white border-r border-gray-100 px-3 py-4'
     },
     collapse: {
       button:
@@ -130,7 +130,7 @@ const customTheme: CustomFlowbiteTheme = {
       listItem: ''
     }
     // items: 'space-y-1 font-medium',
-    // itemGroup: 'mt-4 space-y-2 border-t border-gray-200 pt-4 first:mt-0 first:border-t-0 first:pt-0',
+    // itemGroup: 'mt-4 space-y-2 border-t border-gray-100 pt-4 first:mt-0 first:border-t-0 first:pt-0',
   },
   table: {
     root: {
@@ -152,7 +152,7 @@ const customTheme: CustomFlowbiteTheme = {
       }
     },
     row: {
-      base: 'group/row bg-white border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200',
+      base: 'group/row bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200',
       hovered: 'hover:bg-gray-50',
       striped: 'odd:bg-white even:bg-gray-50'
     }
@@ -186,7 +186,7 @@ const customTheme: CustomFlowbiteTheme = {
       popup: 'pt-0'
     },
     header: {
-      base: 'flex items-start justify-between rounded-t border-b border-gray-200 p-5',
+      base: 'flex items-start justify-between rounded-t border-b border-gray-100 p-5',
       popup: 'p-2 border-b-0',
       title: 'text-xl font-semibold text-gray-900',
       close: {
@@ -195,14 +195,14 @@ const customTheme: CustomFlowbiteTheme = {
       }
     },
     footer: {
-      base: 'flex items-center space-x-2 rounded-b border-t border-gray-200 p-6',
+      base: 'flex items-center space-x-2 rounded-b border-t border-gray-100 p-6',
       popup: 'border-t-0'
     }
   },
   textInput: {
     base: 'flex',
     addon:
-      'inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900',
+      'inline-flex items-center rounded-l-md border border-r-0 border-gray-200 bg-gray-200 px-3 text-sm text-gray-900',
     field: {
       base: 'relative w-full',
       icon: {
@@ -214,14 +214,14 @@ const customTheme: CustomFlowbiteTheme = {
         svg: 'h-5 w-5 text-gray-500'
       },
       input: {
-        base: 'block w-full border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
+        base: 'block w-full border border-gray-200 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
         sizes: {
           sm: 'p-2 sm:text-xs',
           md: 'p-2.5 text-sm',
           lg: 'sm:text-md p-4'
         },
         colors: {
-          gray: 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500',
+          gray: 'bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500',
           info: 'border-cyan-500 bg-cyan-50 text-cyan-900 placeholder-cyan-700 focus:border-cyan-500 focus:ring-cyan-500',
           failure:
             'border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500',
@@ -252,7 +252,7 @@ const customTheme: CustomFlowbiteTheme = {
   select: {
     base: 'flex',
     addon:
-      'inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-200 px-3 text-sm text-gray-900',
+      'inline-flex items-center rounded-l-md border border-r-0 border-gray-200 bg-gray-200 px-3 text-sm text-gray-900',
     field: {
       base: 'relative w-full',
       icon: {
@@ -260,14 +260,14 @@ const customTheme: CustomFlowbiteTheme = {
         svg: 'h-5 w-5 text-gray-500'
       },
       select: {
-        base: 'block w-full border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
+        base: 'block w-full border border-gray-200 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
         sizes: {
           sm: 'p-2 sm:text-xs',
           md: 'p-2.5 text-sm',
           lg: 'sm:text-md p-4'
         },
         colors: {
-          gray: 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500',
+          gray: 'bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500',
           info: 'border-cyan-500 bg-cyan-50 text-cyan-900 focus:border-cyan-500 focus:ring-cyan-500',
           failure:
             'border-red-500 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-500',
@@ -292,9 +292,9 @@ const customTheme: CustomFlowbiteTheme = {
     }
   },
   textarea: {
-    base: 'block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
+    base: 'block w-full rounded-lg border border-gray-200 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50',
     colors: {
-      gray: 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500',
+      gray: 'bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:ring-blue-500',
       info: 'border-cyan-500 bg-cyan-50 text-cyan-900 placeholder-cyan-700 focus:border-cyan-500 focus:ring-cyan-500',
       failure:
         'border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500',

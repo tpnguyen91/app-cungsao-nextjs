@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import type { FamilyMember, Household } from '@/types/household';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CreateHouseholdWizard } from './create-household-wizard';
 
 interface CreateHouseholdDialogProps {
@@ -31,6 +31,24 @@ export function CreateHouseholdDialog({
     };
     getUser();
   }, [supabase.auth]);
+
+  // Keyboard shortcut: Ctrl+N to open dialog
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        if (userId) {
+          setOpen(true);
+        }
+      }
+    },
+    [userId]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const handleSuccess = (household: Household, head: FamilyMember) => {
     toast({

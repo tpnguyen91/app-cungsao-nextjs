@@ -23,7 +23,7 @@ export default async function HouseholdDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -77,7 +77,7 @@ export default async function HouseholdDetailPage({
       family_member:family_members(full_name)
     `
     )
-    .eq('household_id', params.id)
+    .eq('household_id', id)
     .order('worship_date', { ascending: false })
     .limit(5);
 
@@ -89,7 +89,7 @@ export default async function HouseholdDetailPage({
       family_member:family_members(full_name)
     `
     )
-    .eq('household_id', params.id)
+    .eq('household_id', id)
     .gte('worship_date', new Date().toISOString().split('T')[0])
     .order('worship_date', { ascending: true })
     .limit(5);

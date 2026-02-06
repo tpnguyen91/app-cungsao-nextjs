@@ -113,7 +113,7 @@ export function HouseholdDrawerManager({
   };
 
   return (
-    <>
+    <div className='flex flex-1 flex-col overflow-hidden'>
       {children}
 
       <HouseholdDetailDrawer
@@ -124,6 +124,6 @@ export function HouseholdDrawerManager({
         onClose={closeDrawer}
         onUpdate={updateHousehold}
       />
-    </>
+    </div>
   );
 }

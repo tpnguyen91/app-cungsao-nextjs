@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Center petal -->
+  <path d="M32 8C32 8 38 20 38 32C38 44 32 52 32 52C32 52 26 44 26 32C26 20 32 8 32 8Z" fill="#E91E63" stroke="#C2185B" stroke-width="1"/>
+  <!-- Left petals -->
+  <path d="M20 16C20 16 18 28 24 38C30 48 32 52 32 52C32 52 22 46 16 36C10 26 20 16 20 16Z" fill="#F06292" stroke="#E91E63" stroke-width="1"/>
+  <path d="M10 24C10 24 6 34 14 44C22 54 32 52 32 52C32 52 18 50 10 40C2 30 10 24 10 24Z" fill="#F8BBD9" stroke="#F06292" stroke-width="1"/>
+  <!-- Right petals -->
+  <path d="M44 16C44 16 46 28 40 38C34 48 32 52 32 52C32 52 42 46 48 36C54 26 44 16 44 16Z" fill="#F06292" stroke="#E91E63" stroke-width="1"/>
+  <path d="M54 24C54 24 58 34 50 44C42 54 32 52 32 52C32 52 46 50 54 40C62 30 54 24 54 24Z" fill="#F8BBD9" stroke="#F06292" stroke-width="1"/>
+  <!-- Base -->
+  <ellipse cx="32" cy="54" rx="8" ry="3" fill="#4CAF50"/>
+</svg>

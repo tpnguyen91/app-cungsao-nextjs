@@ -12,28 +12,9 @@ export async function createFamilyMember(
   householdId: string,
   data: FamilyMemberFormData
 ) {
-  const supabase = createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
+  const supabase = await createClient();
 
   const validatedData = familyMemberSchema.parse(data);
-
-  // Check if household belongs to user
-  const { data: household } = await supabase
-    .from('households')
-    .select('id')
-    .eq('id', householdId)
-    .eq('created_by', user.id)
-    .single();
-
-  if (!household) {
-    throw new Error('Không tìm thấy hộ gia đình');
-  }
 
   const { data: member, error } = await supabase
     .from('family_members')
@@ -74,27 +55,9 @@ export async function updateFamilyMember(
   id: string,
   data: FamilyMemberFormData
 ) {
-  const supabase = createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
+  const supabase = await createClient();
 
   const validatedData = familyMemberSchema.parse(data);
-
-  // Get member info to check household ownership
-  const { data: currentMember } = await supabase
-    .from('family_members')
-    .select('household_id, households!inner(created_by)')
-    .eq('id', id)
-    .single();
-
-  if (!currentMember || currentMember.households.created_by !== user.id) {
-    throw new Error('Không có quyền cập nhật thành viên này');
-  }
 
   const { data: member, error } = await supabase
     .from('family_members')
@@ -127,26 +90,8 @@ export async function updateFamilyMember(
   return member;
 }
 
-export async function deleteFamilyMember(id: string) {
-  const supabase = createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
-
-  // Get member info to check household ownership
-  const { data: member } = await supabase
-    .from('family_members')
-    .select('household_id, households!inner(created_by)')
-    .eq('id', id)
-    .single();
-
-  if (!member || member.households.created_by !== user.id) {
-    throw new Error('Không có quyền xóa thành viên này');
-  }
+export async function deleteFamilyMember(id: string, householdId: string) {
+  const supabase = await createClient();
 
   const { error } = await supabase.from('family_members').delete().eq('id', id);
 
@@ -154,19 +99,12 @@ export async function deleteFamilyMember(id: string) {
     throw new Error(`Không thể xóa thành viên: ${error.message}`);
   }
 
-  revalidatePath(URL_GIA_DINH_DETAIL(member.household_id));
-  revalidatePath(URL_GIA_DINH_THANH_VIEN(member.household_id));
+  revalidatePath(URL_GIA_DINH_DETAIL(householdId));
+  revalidatePath(URL_GIA_DINH_THANH_VIEN(householdId));
 }
 
 export async function getFamilyMembers(householdId: string) {
-  const supabase = createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('Unauthorized');
-  }
+  const supabase = await createClient();
 
   const { data: members, error } = await supabase
     .from('family_members')

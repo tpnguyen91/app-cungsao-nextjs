@@ -1,8 +1,15 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -23,10 +30,10 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { FamilyMember } from '@/types/database';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, RotateCcw, Save, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-// Form schema with validation
 const familyMemberFormSchema = z.object({
   full_name: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
   dharma_name: z.string().optional(),
@@ -42,7 +49,7 @@ const familyMemberFormSchema = z.object({
 type FormData = z.infer<typeof familyMemberFormSchema>;
 
 interface FamilyMemberFormProps {
-  member?: FamilyMember | null; // null for create, FamilyMember for edit
+  member?: FamilyMember | null;
   householdId: string;
   onSuccess: (member: FamilyMember) => void;
   onCancel: () => void;
@@ -58,15 +65,8 @@ export function FamilyMemberForm({
 }: FamilyMemberFormProps) {
   const { toast } = useToast();
   const isEditing = !!member;
-  console.log({ member });
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors, isSubmitting: internalIsSubmitting }
-  } = useForm<FormData>({
+
+  const form = useForm<FormData>({
     resolver: zodResolver(familyMemberFormSchema),
     defaultValues: {
       full_name: member?.full_name || '',
@@ -76,25 +76,20 @@ export function FamilyMemberForm({
     }
   });
 
-  const isSubmitting = externalIsSubmitting || internalIsSubmitting;
-
-  // Calculate age from birth year
-  const watchedBirthYear = watch('birth_year');
+  const isSubmitting = externalIsSubmitting || form.formState.isSubmitting;
+  const watchedBirthYear = form.watch('birth_year');
   const currentAge = watchedBirthYear
     ? new Date().getFullYear() - watchedBirthYear
     : 0;
 
-  // Handle form submission
   const onSubmit = async (data: FormData) => {
     try {
       if (isEditing && member) {
-        // Update existing member
         const updateData: FamilyMemberFormData = {
           full_name: data.full_name,
           dharma_name: data.dharma_name || '',
           birth_year: data.birth_year,
           gender: data.gender,
-          // Preserve existing values for other required fields
           is_head_of_household: member.is_head_of_household,
           is_alive: member.is_alive ?? true
         };
@@ -108,13 +103,11 @@ export function FamilyMemberForm({
 
         onSuccess({ ...member, ...updatedMember });
       } else {
-        // Create new member
         const newMemberData: FamilyMemberFormData = {
           full_name: data.full_name,
           dharma_name: data.dharma_name || '',
           birth_year: data.birth_year,
           gender: data.gender,
-          // Default values for other required fields
           is_head_of_household: false,
           is_alive: true
         };
@@ -137,14 +130,8 @@ export function FamilyMemberForm({
     }
   };
 
-  // Handle gender selection
-  const handleGenderChange = (value: string) => {
-    setValue('gender', value as Gender);
-  };
-
-  // Reset form (useful for create mode)
   const handleReset = () => {
-    reset({
+    form.reset({
       full_name: member?.full_name || '',
       dharma_name: member?.dharma_name || '',
       birth_year: member?.birth_year || new Date().getFullYear() - 30,
@@ -153,140 +140,167 @@ export function FamilyMemberForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-      <div className='grid gap-4'>
-        {/* Họ tên */}
-        <div className='space-y-2'>
-          <Label htmlFor='full_name'>
-            Họ tên <span className='text-red-500'>*</span>
-          </Label>
-          <Input
-            id='full_name'
-            {...register('full_name')}
-            placeholder='Nhập họ và tên đầy đủ'
-            className={errors.full_name ? 'border-red-500' : ''}
-            disabled={isSubmitting}
-          />
-          {errors.full_name && (
-            <p className='text-sm font-medium text-red-500'>
-              {errors.full_name.message}
-            </p>
-          )}
-        </div>
-
-        {/* Pháp danh */}
-        <div className='space-y-2'>
-          <Label htmlFor='dharma_name'>
-            Pháp danh
-            <span className='text-muted-foreground ml-2 text-sm'>
-              (tùy chọn)
-            </span>
-          </Label>
-          <Input
-            id='dharma_name'
-            {...register('dharma_name')}
-            placeholder='Nhập pháp danh (nếu có)'
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className='flex flex-row space-x-4'>
-          {/* Năm sinh */}
-          <div className='flex-1 space-y-2'>
-            <Label htmlFor='birth_year'>
-              Năm sinh <span className='text-red-500'>*</span>
-              {currentAge > 0 && (
-                <span className='text-muted-foreground ml-2 text-sm'>
-                  ({currentAge} tuổi)
-                </span>
-              )}
-            </Label>
-            <Input
-              id='birth_year'
-              type='number'
-              {...register('birth_year', { valueAsNumber: true })}
-              placeholder='VD: 1990'
-              min='1900'
-              max={new Date().getFullYear()}
-              className={errors.birth_year ? 'border-red-500' : ''}
-              disabled={isSubmitting}
-            />
-            {errors.birth_year && (
-              <p className='text-sm font-medium text-red-500'>
-                {errors.birth_year.message}
-              </p>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-5'>
+        {/* Row 1: Họ tên + Pháp danh */}
+        <div className='grid grid-cols-2 gap-4'>
+          <FormField
+            control={form.control}
+            name='full_name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-slate-700'>
+                  Họ tên <span className='text-red-500'>*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder='Nguyễn Văn A'
+                    disabled={isSubmitting}
+                    className='focus:border-primary focus:ring-primary/20 border-slate-200'
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
 
-          {/* Giới tính */}
-          <div className='flex-1 space-y-2'>
-            <Label htmlFor='gender'>
-              Giới tính <span className='text-red-500'>*</span>
-            </Label>
-            <Select
-              onValueChange={handleGenderChange}
-              value={watch('gender')}
-              disabled={isSubmitting}
-            >
-              <SelectTrigger className={errors.gender ? 'border-red-500' : ''}>
-                <SelectValue placeholder='Chọn giới tính' />
-              </SelectTrigger>
-              <SelectContent>
-                {GENDER_OPTIONS.map((gender) => (
-                  <SelectItem key={gender} value={gender}>
-                    {GENDER_LABELS[gender]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.gender && (
-              <p className='text-sm font-medium text-red-500'>
-                {errors.gender.message}
-              </p>
+          <FormField
+            control={form.control}
+            name='dharma_name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-slate-700'>
+                  Pháp danh
+                  <span className='ml-1 text-xs text-slate-400'>
+                    (tùy chọn)
+                  </span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder='Thích Minh Tâm'
+                    disabled={isSubmitting}
+                    className='focus:border-primary focus:ring-primary/20 border-slate-200'
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
         </div>
-      </div>
 
-      {/* Form Actions */}
-      <div className='flex items-center justify-between border-t pt-4'>
-        <div className='flex space-x-2'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Hủy
-          </Button>
-          {!isEditing && (
+        {/* Row 2: Năm sinh + Giới tính */}
+        <div className='grid grid-cols-2 gap-4'>
+          <FormField
+            control={form.control}
+            name='birth_year'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-slate-700'>
+                  Năm sinh <span className='text-red-500'>*</span>
+                  {currentAge > 0 && (
+                    <span className='ml-1 text-xs text-slate-400'>
+                      ({currentAge} tuổi)
+                    </span>
+                  )}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type='number'
+                    placeholder='1990'
+                    min={1900}
+                    max={new Date().getFullYear()}
+                    disabled={isSubmitting}
+                    onChange={(e) =>
+                      field.onChange(parseInt(e.target.value) || 0)
+                    }
+                    className='focus:border-primary focus:ring-primary/20 border-slate-200'
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='gender'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-slate-700'>
+                  Giới tính <span className='text-red-500'>*</span>
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isSubmitting}
+                >
+                  <FormControl>
+                    <SelectTrigger className='focus:border-primary focus:ring-primary/20 border-slate-200'>
+                      <SelectValue placeholder='Chọn giới tính' />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {GENDER_OPTIONS.map((gender) => (
+                      <SelectItem key={gender} value={gender}>
+                        {GENDER_LABELS[gender]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className='flex items-center justify-between border-t border-slate-100 pt-4'>
+          <div className='flex gap-2'>
             <Button
               type='button'
               variant='ghost'
-              onClick={handleReset}
+              size='sm'
+              onClick={onCancel}
               disabled={isSubmitting}
+              className='cursor-pointer text-slate-600 hover:bg-slate-100 hover:text-slate-800'
             >
-              Đặt lại
+              <X className='mr-1.5 h-4 w-4' />
+              Hủy
             </Button>
-          )}
+            {!isEditing && (
+              <Button
+                type='button'
+                variant='ghost'
+                size='sm'
+                onClick={handleReset}
+                disabled={isSubmitting}
+                className='cursor-pointer text-slate-500 hover:bg-slate-100 hover:text-slate-700'
+              >
+                <RotateCcw className='mr-1.5 h-4 w-4' />
+                Đặt lại
+              </Button>
+            )}
+          </div>
+
+          <Button
+            type='submit'
+            size='sm'
+            disabled={isSubmitting}
+            className='bg-primary hover:bg-primary/90 cursor-pointer'
+          >
+            {isSubmitting ? (
+              <Loader2 className='mr-1.5 h-4 w-4 animate-spin' />
+            ) : (
+              <Save className='mr-1.5 h-4 w-4' />
+            )}
+            {isEditing ? 'Cập nhật' : 'Thêm mới'}
+          </Button>
         </div>
-
-        <Button type='submit' disabled={isSubmitting}>
-          {isSubmitting && (
-            <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
-          )}
-          {isEditing ? 'Cập nhật' : 'Thêm mới'}
-        </Button>
-      </div>
-
-      {/* Helper text */}
-      <div className='text-muted-foreground text-sm'>
-        <p className='flex items-center'>
-          <span className='mr-1 text-red-500'>*</span>
-          Thông tin bắt buộc
-        </p>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }
 

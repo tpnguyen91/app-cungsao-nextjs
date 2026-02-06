@@ -9,7 +9,7 @@ import {
 } from '../schemas/household-schema';
 
 export async function createHousehold(data: HouseholdFormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -41,7 +41,7 @@ export async function createHousehold(data: HouseholdFormData) {
 }
 
 export async function updateHousehold(id: string, data: HouseholdFormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -70,7 +70,7 @@ export async function updateHousehold(id: string, data: HouseholdFormData) {
 }
 
 export async function deleteHousehold(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -79,11 +79,22 @@ export async function deleteHousehold(id: string) {
     throw new Error('Unauthorized');
   }
 
-  const { error } = await supabase
+  // Verify ownership first
+  const { data: household } = await supabase
     .from('households')
-    .delete()
+    .select('id')
     .eq('id', id)
-    .eq('created_by', user.id);
+    .eq('created_by', user.id)
+    .single();
+
+  if (!household) {
+    throw new Error('Không tìm thấy hộ gia đình hoặc không có quyền xóa');
+  }
+
+  // Use RPC function to delete cascade
+  const { error } = await supabase.rpc('delete_household_cascade', {
+    p_household_id: id
+  });
 
   if (error) {
     throw new Error(`Không thể xóa hộ gia đình: ${error.message}`);
@@ -93,7 +104,7 @@ export async function deleteHousehold(id: string) {
 }
 
 export async function getHousehold(id: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

@@ -80,7 +80,6 @@ export function CreateHouseholdWizard({
 
   const { toast } = useToast();
 
-  // Memoize provinces - only computed once
   const provinces = useMemo(() => getProvinces(), []);
 
   const householdForm = useForm<HouseholdFormData>({
@@ -111,7 +110,6 @@ export function CreateHouseholdWizard({
   const householdProvinceCode = householdForm.watch('province_code');
   const headProvinceCode = headForm.watch('hometown_province_code');
 
-  // Memoize wards to avoid recalculation on every render
   const householdWards = useMemo(
     () =>
       householdProvinceCode ? getWardsByProvince(householdProvinceCode) : [],
@@ -177,7 +175,6 @@ export function CreateHouseholdWizard({
     onClose();
   }, [householdForm, headForm, onClose]);
 
-  // Stepper
   const steps = [
     { num: 1, label: 'Thông tin hộ' },
     { num: 2, label: 'Chủ hộ' },
@@ -188,9 +185,9 @@ export function CreateHouseholdWizard({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className='max-w-lg overflow-hidden p-0'>
         {/* Header */}
-        <DialogHeader className='border-b border-gray-100 px-6 pt-5 pb-4'>
-          <DialogTitle className='flex items-center gap-2 text-base font-semibold text-gray-800'>
-            <Home className='h-5 w-5 text-[#00B14F]' />
+        <DialogHeader className='border-b border-slate-100 px-6 pt-5 pb-4'>
+          <DialogTitle className='flex items-center gap-2 text-base font-semibold text-slate-800'>
+            <Home className='text-primary h-5 w-5' />
             Tạo hộ gia đình mới
           </DialogTitle>
 
@@ -202,10 +199,10 @@ export function CreateHouseholdWizard({
                   <div
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-all ${
                       currentStep > step.num
-                        ? 'bg-[#00B14F] text-white'
+                        ? 'bg-primary text-white'
                         : currentStep === step.num
-                          ? 'bg-[#00B14F] text-white'
-                          : 'bg-gray-100 text-gray-400'
+                          ? 'bg-primary text-white'
+                          : 'bg-slate-100 text-slate-400'
                     }`}
                   >
                     {currentStep > step.num ? (
@@ -215,14 +212,14 @@ export function CreateHouseholdWizard({
                     )}
                   </div>
                   <span
-                    className={`text-xs ${currentStep >= step.num ? 'text-gray-700' : 'text-gray-400'}`}
+                    className={`text-xs ${currentStep >= step.num ? 'text-slate-700' : 'text-slate-400'}`}
                   >
                     {step.label}
                   </span>
                 </div>
                 {i < steps.length - 1 && (
                   <div
-                    className={`mx-3 h-px w-8 ${currentStep > step.num ? 'bg-[#00B14F]' : 'bg-gray-200'}`}
+                    className={`mx-3 h-px w-8 ${currentStep > step.num ? 'bg-primary' : 'bg-slate-200'}`}
                   />
                 )}
               </div>
@@ -235,17 +232,17 @@ export function CreateHouseholdWizard({
           <form onSubmit={householdForm.handleSubmit(handleStep1Submit)}>
             <div className='space-y-4 px-6 py-5'>
               <div>
-                <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                   Địa chỉ chi tiết <span className='text-red-500'>*</span>
                 </label>
                 <Input
                   {...householdForm.register('address')}
                   placeholder='Số nhà, tên đường...'
-                  className={
+                  className={`border-slate-200 ${
                     householdForm.formState.errors.address
                       ? 'border-red-400'
                       : ''
-                  }
+                  }`}
                 />
                 {householdForm.formState.errors.address && (
                   <p className='mt-1 text-xs text-red-500'>
@@ -256,7 +253,7 @@ export function CreateHouseholdWizard({
 
               <div className='grid grid-cols-2 gap-3'>
                 <div>
-                  <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                  <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Tỉnh/Thành phố <span className='text-red-500'>*</span>
                   </label>
                   <Select
@@ -267,7 +264,7 @@ export function CreateHouseholdWizard({
                     }}
                   >
                     <SelectTrigger
-                      className={`cursor-pointer ${householdForm.formState.errors.province_code ? 'border-red-400' : ''}`}
+                      className={`cursor-pointer border-slate-200 ${householdForm.formState.errors.province_code ? 'border-red-400' : ''}`}
                     >
                       <SelectValue placeholder='Chọn tỉnh/thành phố' />
                     </SelectTrigger>
@@ -285,7 +282,7 @@ export function CreateHouseholdWizard({
                   </Select>
                 </div>
                 <div>
-                  <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                  <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Phường/Xã <span className='text-red-500'>*</span>
                   </label>
                   <Select
@@ -296,7 +293,7 @@ export function CreateHouseholdWizard({
                     disabled={!householdForm.watch('province_code')}
                   >
                     <SelectTrigger
-                      className={`cursor-pointer ${householdForm.formState.errors.ward_code ? 'border-red-400' : ''}`}
+                      className={`cursor-pointer border-slate-200 ${householdForm.formState.errors.ward_code ? 'border-red-400' : ''}`}
                     >
                       <SelectValue placeholder='Chọn phường/xã' />
                     </SelectTrigger>
@@ -316,15 +313,15 @@ export function CreateHouseholdWizard({
               </div>
 
               <div>
-                <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                   Số điện thoại <span className='text-red-500'>*</span>
                 </label>
                 <Input
                   {...householdForm.register('phone')}
                   placeholder='0912 345 678'
-                  className={
+                  className={`border-slate-200 ${
                     householdForm.formState.errors.phone ? 'border-red-400' : ''
-                  }
+                  }`}
                 />
                 {householdForm.formState.errors.phone && (
                   <p className='mt-1 text-xs text-red-500'>
@@ -334,30 +331,30 @@ export function CreateHouseholdWizard({
               </div>
 
               <div>
-                <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                   Ghi chú
                 </label>
                 <Textarea
                   {...householdForm.register('notes')}
                   placeholder='Ghi chú thêm (tùy chọn)'
                   rows={2}
-                  className='resize-none'
+                  className='resize-none border-slate-200'
                 />
               </div>
             </div>
 
-            <div className='flex justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4'>
+            <div className='flex justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4'>
               <Button
                 type='button'
                 variant='outline'
                 onClick={handleClose}
-                className='cursor-pointer'
+                className='cursor-pointer border-slate-200'
               >
                 Hủy
               </Button>
               <Button
                 type='submit'
-                className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
+                className='bg-primary hover:bg-primary/90 cursor-pointer'
               >
                 Tiếp tục <ArrowRight className='ml-1.5 h-4 w-4' />
               </Button>
@@ -371,21 +368,21 @@ export function CreateHouseholdWizard({
             <div className='space-y-4 px-6 py-5'>
               <div className='grid grid-cols-2 gap-3'>
                 <div>
-                  <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                  <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Họ và tên <span className='text-red-500'>*</span>
                   </label>
                   <Input
                     {...headForm.register('full_name')}
                     placeholder='Nguyễn Văn A'
-                    className={
+                    className={`border-slate-200 ${
                       headForm.formState.errors.full_name
                         ? 'border-red-400'
                         : ''
-                    }
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                  <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Năm sinh <span className='text-red-500'>*</span>
                   </label>
                   <Input
@@ -394,17 +391,17 @@ export function CreateHouseholdWizard({
                       valueAsNumber: true
                     })}
                     placeholder='1990'
-                    className={
+                    className={`border-slate-200 ${
                       headForm.formState.errors.birth_year
                         ? 'border-red-400'
                         : ''
-                    }
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className='mb-1.5 block text-sm font-medium text-gray-700'>
+                <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                   Giới tính <span className='text-red-500'>*</span>
                 </label>
                 <div className='flex gap-3'>
@@ -416,8 +413,8 @@ export function CreateHouseholdWizard({
                       key={opt.value}
                       className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border py-2.5 transition-all ${
                         headForm.watch('gender') === opt.value
-                          ? 'border-[#00B14F] bg-emerald-50 text-[#00B14F]'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 hover:border-slate-300'
                       }`}
                     >
                       <input
@@ -433,25 +430,25 @@ export function CreateHouseholdWizard({
               </div>
 
               {/* Quê quán */}
-              <div className='space-y-3 rounded-lg border border-gray-200 bg-gray-50/30 p-4'>
+              <div className='space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-4'>
                 <div className='flex items-center justify-between'>
-                  <span className='text-sm font-medium text-gray-700'>
+                  <span className='text-sm font-medium text-slate-700'>
                     Quê quán
                   </span>
                   <label className='flex cursor-pointer items-center gap-2'>
                     <Checkbox
                       checked={useSameAddress}
                       onCheckedChange={(c) => setUseSameAddress(c as boolean)}
-                      className='data-[state=checked]:border-[#00B14F] data-[state=checked]:bg-[#00B14F]'
+                      className='data-[state=checked]:border-primary data-[state=checked]:bg-primary'
                     />
-                    <span className='text-sm text-gray-600'>
+                    <span className='text-sm text-slate-600'>
                       Giống địa chỉ hộ
                     </span>
                   </label>
                 </div>
 
                 {useSameAddress ? (
-                  <p className='rounded-md bg-emerald-50 px-3 py-2 text-sm text-[#00B14F]'>
+                  <p className='bg-primary/5 text-primary rounded-md px-3 py-2 text-sm'>
                     {householdData.address},{' '}
                     {
                       provinces.find(
@@ -464,7 +461,7 @@ export function CreateHouseholdWizard({
                     <Input
                       {...headForm.register('hometown_address')}
                       placeholder='Địa chỉ quê quán'
-                      className='bg-white'
+                      className='border-slate-200 bg-white'
                     />
                     <div className='grid grid-cols-2 gap-3'>
                       <Select
@@ -474,7 +471,7 @@ export function CreateHouseholdWizard({
                           headForm.setValue('hometown_ward_code', '');
                         }}
                       >
-                        <SelectTrigger className='cursor-pointer bg-white'>
+                        <SelectTrigger className='cursor-pointer border-slate-200 bg-white'>
                           <SelectValue placeholder='Tỉnh/TP' />
                         </SelectTrigger>
                         <SelectContent>
@@ -496,7 +493,7 @@ export function CreateHouseholdWizard({
                         }
                         disabled={!headForm.watch('hometown_province_code')}
                       >
-                        <SelectTrigger className='cursor-pointer bg-white'>
+                        <SelectTrigger className='cursor-pointer border-slate-200 bg-white'>
                           <SelectValue placeholder='Phường/Xã' />
                         </SelectTrigger>
                         <SelectContent>
@@ -518,28 +515,28 @@ export function CreateHouseholdWizard({
 
               {/* Preview */}
               {headForm.watch('full_name') && (
-                <p className='rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-600'>
+                <p className='rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-600'>
                   Tên hộ:{' '}
-                  <span className='font-medium text-gray-800'>
+                  <span className='font-medium text-slate-800'>
                     Gia đình {headForm.watch('full_name')}
                   </span>
                 </p>
               )}
             </div>
 
-            <div className='flex justify-between gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4'>
+            <div className='flex justify-between gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4'>
               <Button
                 type='button'
                 variant='outline'
                 onClick={() => setCurrentStep(1)}
-                className='cursor-pointer'
+                className='cursor-pointer border-slate-200'
               >
                 <ArrowLeft className='mr-1.5 h-4 w-4' /> Quay lại
               </Button>
               <Button
                 type='submit'
                 disabled={isSubmitting}
-                className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
+                className='bg-primary hover:bg-primary/90 cursor-pointer'
               >
                 {isSubmitting ? (
                   <>
@@ -557,20 +554,20 @@ export function CreateHouseholdWizard({
         {/* Step 3: Success */}
         {currentStep === 3 && (
           <div className='px-6 py-10 text-center'>
-            <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100'>
-              <Check className='h-8 w-8 text-[#00B14F]' />
+            <div className='bg-primary/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full'>
+              <Check className='text-primary h-8 w-8' />
             </div>
-            <h3 className='mb-1 text-lg font-semibold text-gray-800'>
+            <h3 className='mb-1 text-lg font-semibold text-slate-800'>
               Tạo thành công!
             </h3>
-            <p className='mb-6 text-sm text-gray-600'>
+            <p className='mb-6 text-sm text-slate-600'>
               Hộ gia đình{' '}
-              <span className='font-medium text-[#00B14F]'>
+              <span className='text-primary font-medium'>
                 "Gia đình {headForm.watch('full_name')}"
               </span>{' '}
               đã được tạo
             </p>
-            <div className='flex items-center justify-center gap-2 text-sm text-gray-400'>
+            <div className='flex items-center justify-center gap-2 text-sm text-slate-400'>
               <Loader2 className='h-4 w-4 animate-spin' />
               Đang chuyển về danh sách...
             </div>
