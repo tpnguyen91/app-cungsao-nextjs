@@ -58,7 +58,7 @@ export function InlineFamilyMembersTable({
   const [memberToDelete, setMemberToDelete] = useState<FamilyMember | null>(
     null
   );
-  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [isFormSubmitting] = useState(false);
   const { toast } = useToast();
 
   // Calculate age from birth year
