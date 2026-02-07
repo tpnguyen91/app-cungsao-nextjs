@@ -77,17 +77,13 @@ export function MemberDetailDrawer({
       const updateData: FamilyMemberFormData = {
         full_name: editData.full_name!,
         birth_year: editData.birth_year!,
-        hometown: editData.hometown || '',
-        relationship_role: editData.relationship_role as RelationshipRole,
         gender: editData.gender as Gender,
         is_head_of_household: editData.is_head_of_household!,
-        is_alive: editData.is_alive || true,
-        notes: editData.notes || '',
-        province_id: editData.province_code || '',
-        ward_id: editData.ward_code || ''
+        is_alive: editData.is_alive ?? true,
+        dharma_name: editData.dharma_name || ''
       };
 
-      const updatedMember = await updateFamilyMember(member.id, updateData);
+      await updateFamilyMember(member.id, updateData);
 
       setIsEditing(false);
       if (onUpdate) {

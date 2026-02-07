@@ -108,7 +108,7 @@ export function InlineFamilyMembersTable({
     if (!memberToDelete) return;
 
     try {
-      await deleteFamilyMember(memberToDelete.id);
+      await deleteFamilyMember(memberToDelete.id, householdId);
       setFamilyMembers((prev) =>
         prev.filter((member) => member.id !== memberToDelete.id)
       );

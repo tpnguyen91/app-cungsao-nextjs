@@ -97,7 +97,8 @@ export function getSaoChieuMenh(birthYear: number, gender: string): string {
   if (du === 0) du = 9;
 
   // Lấy sao chiếu mệnh
-  return gender === 'nam' ? saoNam[du - 1] : saoNu[du - 1];
+  const result = gender === 'nam' ? saoNam[du - 1] : saoNu[du - 1];
+  return result || '';
 }
 
 export function getVanHan(birthYear: number, gender: string) {
@@ -189,8 +190,8 @@ export function getVanHan(birthYear: number, gender: string) {
     Sửu: ['Hợi', 'Tý', 'Sửu']
   };
 
-  const currentChi = diaChi[currentYear % 12];
-  const tamTai = tamHop[chi].includes(currentChi);
+  const currentChi = diaChi[currentYear % 12] || '';
+  const tamTai = chi && tamHop[chi] ? tamHop[chi].includes(currentChi) : false;
 
   return { sao, han, diemVuong, tamTai, tuoiMu, chi };
 }
@@ -385,8 +386,8 @@ export function generateDummyHouseholds(count = 100) {
     );
   }
 
-  function getRandomElement(array) {
-    return array[Math.floor(Math.random() * array.length)];
+  function getRandomElement<T>(array: T[]): T {
+    return array[Math.floor(Math.random() * array.length)] as T;
   }
 
   function generateName() {
@@ -414,7 +415,7 @@ export function generateDummyHouseholds(count = 100) {
     return operator + number;
   }
 
-  function generateRandomDate(start, end) {
+  function generateRandomDate(start: Date, end: Date): Date {
     const startTime = start.getTime();
     const endTime = end.getTime();
     const randomTime = startTime + Math.random() * (endTime - startTime);

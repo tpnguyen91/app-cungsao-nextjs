@@ -48,12 +48,12 @@ export const getWardsByProvince = (provinceCode: string): Ward[] => {
       _wardsByProvince.set(ward.parent_code, existing);
     }
     // Sort each group once
-    for (const [code, wardList] of _wardsByProvince) {
-      _wardsByProvince.set(
+    _wardsByProvince.forEach((wardList, code) => {
+      _wardsByProvince!.set(
         code,
-        wardList.sort((a, b) => a.name.localeCompare(b.name, 'vi'))
+        wardList.sort((a: Ward, b: Ward) => a.name.localeCompare(b.name, 'vi'))
       );
-    }
+    });
   }
   return _wardsByProvince.get(provinceCode) || [];
 };

@@ -79,18 +79,19 @@ export async function createHouseholdWithHead(
   } catch (error) {
     console.error('Error creating household with head:', error);
 
+    const err = error as Error;
     // Handle specific error cases
     if (
-      error.message?.includes('duplicate key value violates unique constraint')
+      err.message?.includes('duplicate key value violates unique constraint')
     ) {
-      if (error.message.includes('phone')) {
+      if (err.message.includes('phone')) {
         throw new Error(
           'Số điện thoại này đã được sử dụng cho hộ gia đình khác'
         );
       }
     }
 
-    throw new Error(error.message || 'Có lỗi xảy ra khi tạo hộ gia đình');
+    throw new Error(err.message || 'Có lỗi xảy ra khi tạo hộ gia đình');
   }
 }
 

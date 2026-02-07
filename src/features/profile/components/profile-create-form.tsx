@@ -28,7 +28,6 @@ import { profileSchema, type ProfileFormValues } from '../utils/form-schema';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconAlertTriangle, IconTrash } from '@tabler/icons-react';
-import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 
@@ -37,15 +36,12 @@ interface ProfileFormType {
 }
 
 const ProfileCreateForm: React.FC<ProfileFormType> = ({ initialData }) => {
-  const params = useParams();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [loading] = useState(false);
+  const [, setOpen] = useState(false);
   const title = initialData ? 'Edit product' : 'Create Your Profile';
   const description = initialData
     ? 'Edit a product.'
     : 'To create your resume, we first need some basic information about you.';
-  const [previousStep, setPreviousStep] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState({});
 
@@ -113,7 +109,8 @@ const ProfileCreateForm: React.FC<ProfileFormType> = ({ initialData }) => {
   ];
 
   const next = async () => {
-    const fields = steps[currentStep].fields;
+    const fields = steps[currentStep]?.fields;
+    if (!fields) return;
 
     const output = await form.trigger(fields as FieldName[], {
       shouldFocus: true
@@ -125,14 +122,12 @@ const ProfileCreateForm: React.FC<ProfileFormType> = ({ initialData }) => {
       if (currentStep === steps.length - 2) {
         await form.handleSubmit(processForm)();
       }
-      setPreviousStep(currentStep);
       setCurrentStep((step) => step + 1);
     }
   };
 
   const prev = () => {
     if (currentStep > 0) {
-      setPreviousStep(currentStep);
       setCurrentStep((step) => step - 1);
     }
   };

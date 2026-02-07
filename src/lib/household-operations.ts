@@ -118,7 +118,8 @@ export async function addFamilyMember(
     return data;
   } catch (error) {
     console.error('Error adding family member:', error);
-    throw new Error(error.message || 'Có lỗi xảy ra khi thêm thành viên');
+    const err = error as Error;
+    throw new Error(err.message || 'Có lỗi xảy ra khi thêm thành viên');
   }
 }
 
@@ -153,10 +154,10 @@ export async function transferHeadship(
     if (fetchError) throw fetchError;
 
     const newHead = household.family_members.find(
-      (m) => m.id === transferData.new_head_id
+      (m: FamilyMember) => m.id === transferData.new_head_id
     );
     const oldHead = household.family_members.find(
-      (m) => m.id === transferData.current_head_id
+      (m: FamilyMember) => m.id === transferData.current_head_id
     );
 
     return {
@@ -168,7 +169,8 @@ export async function transferHeadship(
     };
   } catch (error) {
     console.error('Error transferring headship:', error);
-    throw new Error(error.message || 'Có lỗi xảy ra khi chuyển quyền chủ hộ');
+    const err = error as Error;
+    throw new Error(err.message || 'Có lỗi xảy ra khi chuyển quyền chủ hộ');
   }
 }
 
@@ -186,7 +188,8 @@ export async function deleteHouseholdCascade(
     if (error) throw error;
   } catch (error) {
     console.error('Error deleting household:', error);
-    throw new Error(error.message || 'Có lỗi xảy ra khi xóa hộ gia đình');
+    const err = error as Error;
+    throw new Error(err.message || 'Có lỗi xảy ra khi xóa hộ gia đình');
   }
 }
 
@@ -271,8 +274,9 @@ export async function updateFamilyMember(
     return data;
   } catch (error) {
     console.error('Error updating family member:', error);
+    const err = error as Error;
     throw new Error(
-      error.message || 'Có lỗi xảy ra khi cập nhật thông tin thành viên'
+      err.message || 'Có lỗi xảy ra khi cập nhật thông tin thành viên'
     );
   }
 }

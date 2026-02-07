@@ -87,7 +87,7 @@ export function KanbanBoard() {
 
   const announcements: Announcements = {
     onDragStart({ active }) {
-      if (!hasDraggableData(active)) return;
+      if (!hasDraggableData(active)) return '';
       if (active.data.current?.type === 'Column') {
         const startColumnIdx = columnsId.findIndex((id) => id === active.id);
         const startColumn = columns[startColumnIdx];
@@ -104,9 +104,10 @@ export function KanbanBoard() {
           taskPosition + 1
         } of ${tasksInColumn.length} in column ${column?.title}`;
       }
+      return '';
     },
     onDragOver({ active, over }) {
-      if (!hasDraggableData(active) || !hasDraggableData(over)) return;
+      if (!hasDraggableData(active) || !hasDraggableData(over)) return '';
 
       if (
         active.data.current?.type === 'Column' &&
@@ -135,11 +136,12 @@ export function KanbanBoard() {
           tasksInColumn.length
         } in column ${column?.title}`;
       }
+      return '';
     },
     onDragEnd({ active, over }) {
       if (!hasDraggableData(active) || !hasDraggableData(over)) {
         pickedUpTaskColumn.current = 'TODO';
-        return;
+        return '';
       }
       if (
         active.data.current?.type === 'Column' &&
@@ -170,6 +172,7 @@ export function KanbanBoard() {
         } in column ${column?.title}`;
       }
       pickedUpTaskColumn.current = 'TODO';
+      return '';
     },
     onDragCancel({ active }) {
       pickedUpTaskColumn.current = 'TODO';

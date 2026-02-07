@@ -70,11 +70,10 @@ export default function SignInViewPage({ stars }: { stars: number }) {
               <span className='font-display font-medium'>{stars}</span>
             </div>
           </Link>
-          <ClerkSignInForm
-            initialValues={{
-              emailAddress: 'your_mail+clerk_test@example.com'
-            }}
-          />
+          {/* Placeholder for sign in form */}
+          <div className='text-muted-foreground w-full rounded-lg border p-4 text-center'>
+            Sign in form placeholder
+          </div>
 
           <p className='text-muted-foreground px-8 text-center text-sm'>
             By clicking continue, you agree to our{' '}

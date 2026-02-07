@@ -70,11 +70,10 @@ export default function SignUpViewPage({ stars }: { stars: number }) {
               <span className='font-display font-medium'>{stars}</span>
             </div>
           </Link>
-          <ClerkSignUpForm
-            initialValues={{
-              emailAddress: 'your_mail+clerk_test@example.com'
-            }}
-          />
+          {/* Placeholder for sign up form */}
+          <div className='text-muted-foreground w-full rounded-lg border p-4 text-center'>
+            Sign up form placeholder
+          </div>
           <p className='text-muted-foreground px-8 text-center text-sm'>
             By clicking continue, you agree to our{' '}
             <Link
