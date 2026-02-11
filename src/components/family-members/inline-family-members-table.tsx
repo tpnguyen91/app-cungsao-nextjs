@@ -31,12 +31,14 @@ import {
   GENDER_LABELS
 } from '@/features/family-members/schemas/family-member-schema';
 import { useToast } from '@/hooks/use-toast';
+import { useHouseholdDrawer } from '@/hooks/use-household-drawer';
 import { getCanChi, getSaoChieuMenh, getVanHan } from '@/lib/utils';
 import type { FamilyMember } from '@/types/database';
 import { Edit, Eye, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import FamilyMemberForm from './family-member-form';
 import { MemberDetailDrawer } from './member-detail-drawer';
+import { MemberSearchModal } from './member-search-modal';
 
 interface InlineFamilyMembersTableProps {
   members: FamilyMember[];
@@ -59,6 +61,8 @@ export function InlineFamilyMembersTable({
     null
   );
   const [isFormSubmitting] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const { openHousehold } = useHouseholdDrawer();
   const { toast } = useToast();
 
   // Calculate age from birth year
@@ -154,13 +158,15 @@ export function InlineFamilyMembersTable({
             Quản lý thông tin các thành viên trong gia đình
           </p>
         </div>
-        <Button
-          onClick={handleAddMember}
-          className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
-        >
-          <Plus className='mr-2 h-4 w-4' />
-          Thêm thành viên
-        </Button>
+        <div className='flex gap-2'>
+          <Button
+            onClick={handleAddMember}
+            className='cursor-pointer bg-[#00B14F] hover:bg-[#009643]'
+          >
+            <Plus className='mr-2 h-4 w-4' />
+            Thêm thành viên
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
@@ -354,6 +360,19 @@ export function InlineFamilyMembersTable({
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onUpdate={updateMemberFromDrawer}
+      />
+
+      {/* Member Search Modal */}
+      <MemberSearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSelectMember={(member) => {
+          openHousehold(member.household_id);
+          toast({
+            title: 'Đã chọn thành viên',
+            description: `${member.full_name} - ${member.household_address || 'Không có địa chỉ'}`
+          });
+        }}
       />
     </div>
   );

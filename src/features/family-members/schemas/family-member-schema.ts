@@ -16,8 +16,8 @@ export enum RelationshipRole {
 
 // Define gender enum
 export enum Gender {
-  NAM = 'nam',
-  NU = 'nu'
+  NAM = 'NAM',
+  NU = 'NU'
 }
 
 // Display labels for UI

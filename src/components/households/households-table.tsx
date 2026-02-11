@@ -3,7 +3,20 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -25,6 +38,8 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
+import provincesData from '@/data/province.json';
+import wardsData from '@/data/ward.json';
 import { useHouseholdNavigation } from '@/hooks/use-household-navigation';
 import { getProvinces, getWardsByProvince } from '@/lib/vietnam-data';
 import {
@@ -42,11 +57,14 @@ import { vi } from 'date-fns/locale';
 import {
   ArrowUpDown,
   Calendar,
+  Check,
+  ChevronsUpDown,
   Edit,
   Eye,
   Home,
   MapPin,
   Phone,
+  Plus,
   Printer,
   Search,
   Trash2,
@@ -55,6 +73,7 @@ import {
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useMemo } from 'react';
+import { CreateHouseholdDialog } from './create-household-dialog';
 import { DeleteHouseholdDialog } from './delete-household-dialog';
 import { EditHouseholdDialog } from './edit-household-dialog';
 import { PrintHouseholdWrapper } from './print-household-wrapper';
@@ -63,8 +82,8 @@ export interface Household {
   id: string;
   household_name: string;
   address: string;
-  province_id?: string;
-  ward_id?: string;
+  province_code?: string;
+  ward_code?: string;
   phone?: string;
   created_at: string;
   head_of_household?: {
@@ -106,6 +125,9 @@ export function HouseholdsTable({
     initialProvinceFilter
   );
   const [wardFilter, setWardFilter] = React.useState(initialWardFilter);
+
+  const [provinceOpen, setProvinceOpen] = React.useState(false);
+  const [wardOpen, setWardOpen] = React.useState(false);
 
   const { openHouseholdDrawer } = useHouseholdNavigation();
   const router = useRouter();
@@ -186,6 +208,19 @@ export function HouseholdsTable({
     return household?.member_count || 0;
   };
 
+  // Helper functions to get province/ward names by code
+  const getProvinceName = (code: string | undefined) => {
+    if (!code) return null;
+    const province = (provincesData as Record<string, { name: string }>)[code];
+    return province?.name || null;
+  };
+
+  const getWardName = (code: string | undefined) => {
+    if (!code) return null;
+    const ward = (wardsData as Record<string, { name: string }>)[code];
+    return ward?.name || null;
+  };
+
   const provinces = useMemo(() => getProvinces(), []);
   const wards = useMemo(
     () => (provinceFilter ? getWardsByProvince(provinceFilter) : []),
@@ -208,22 +243,50 @@ export function HouseholdsTable({
             className='h-8 px-2 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           >
             <Home className='mr-2 h-4 w-4' />
-            Tên hộ gia đình
+            Hộ gia đình
             <ArrowUpDown className='ml-2 h-4 w-4' />
           </Button>
         );
       },
-      cell: ({ row }) => (
-        <div className='space-y-1'>
-          <div className='group-hover:text-primary font-medium text-slate-800 transition-colors'>
-            {row.getValue('household_name')}
-          </div>
-          {row.original.head_of_household && (
-            <div className='flex items-center text-xs text-slate-500'>
-              <Users className='mr-1 h-3 w-3' />
-              Chủ hộ: {row.original.head_of_household.full_name}
+      cell: ({ row }) => {
+        const count = getMemberCount(row.original);
+        return (
+          <div className='space-y-1.5'>
+            <div className='group-hover:text-primary font-medium text-slate-800 transition-colors'>
+              {row.getValue('household_name')}
             </div>
-          )}
+            {row.original.head_of_household && (
+              <div className='flex items-center text-xs text-slate-500'>
+                <Users className='mr-1 h-3 w-3' />
+                Chủ hộ: {row.original.head_of_household.full_name}
+              </div>
+            )}
+            <Badge
+              variant={count > 0 ? 'default' : 'secondary'}
+              className={`px-2 py-0.5 font-mono text-xs ${
+                count > 0
+                  ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                  : 'bg-slate-100 text-slate-500'
+              }`}
+            >
+              <Users className='mr-1 h-3 w-3' />
+              {count} thành viên
+            </Badge>
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: 'phone',
+      header: () => (
+        <div className='flex items-center font-medium text-slate-600'>
+          <Phone className='mr-2 h-4 w-4' />
+          Số điện thoại
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className='text-sm text-slate-700'>
+          {row.original.phone || '-'}
         </div>
       )
     },
@@ -232,71 +295,40 @@ export function HouseholdsTable({
       header: () => (
         <div className='flex items-center font-medium text-slate-600'>
           <MapPin className='mr-2 h-4 w-4' />
-          Thông tin
+          Địa chỉ
         </div>
       ),
-      cell: ({ row }) => (
-        <div className='space-y-1'>
-          <div
-            className='max-w-xs truncate text-sm text-slate-700'
-            title={row.getValue('address')}
-          >
-            {row.getValue('address')}
-          </div>
-          {row.original.phone && (
-            <div className='flex items-center text-xs text-slate-500'>
-              <Phone className='mr-1 h-3 w-3' />
-              {row.original.phone}
-            </div>
-          )}
-        </div>
-      )
-    },
-    {
-      accessorKey: 'member_count',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant='ghost'
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className='h-8 px-2 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-          >
-            <Users className='mr-2 h-4 w-4' />
-            Thành viên
-            <ArrowUpDown className='ml-2 h-4 w-4' />
-          </Button>
-        );
-      },
       cell: ({ row }) => {
-        const count = getMemberCount(row.original);
+        const address = row.getValue('address') as string;
+        const wardName = getWardName(row.original.ward_code);
+        const provinceName = getProvinceName(row.original.province_code);
+
+        // Build address parts
+        const addressParts = [address, wardName, provinceName].filter(Boolean);
+        const fullAddress = addressParts.join(', ');
+
         return (
-          <div className='flex items-center space-x-2'>
-            <Badge
-              variant={count > 0 ? 'default' : 'secondary'}
-              className={`px-3 py-1 font-mono text-xs ${
-                count > 0
-                  ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                  : 'bg-slate-100 text-slate-500'
-              }`}
-            >
-              <Users className='mr-1 h-3 w-3' />
-              {count} người
-            </Badge>
-            {count > 5 && (
-              <Badge
-                variant='secondary'
-                className='bg-amber-50 px-2 py-1 text-xs text-amber-600'
-              >
-                Đông
-              </Badge>
-            )}
-          </div>
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className='max-w-xs cursor-default space-y-0.5 text-sm text-slate-700'>
+                  {address && <div className='truncate'>{address}</div>}
+                  {(wardName || provinceName) && (
+                    <div className='truncate text-xs text-slate-500'>
+                      {[wardName, provinceName].filter(Boolean).join(', ')}
+                    </div>
+                  )}
+                  {!address && !wardName && !provinceName && '-'}
+                </div>
+              </TooltipTrigger>
+              {fullAddress && (
+                <TooltipContent side='top' className='max-w-sm'>
+                  <p>{fullAddress}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         );
-      },
-      sortingFn: (rowA, rowB) => {
-        const countA = getMemberCount(rowA.original);
-        const countB = getMemberCount(rowB.original);
-        return countA - countB;
       }
     },
     {
@@ -357,6 +389,8 @@ export function HouseholdsTable({
                     householdName={household.household_name}
                     address={household.address}
                     phone={household.phone}
+                    province_code={household.province_code}
+                    ward_code={household.ward_code}
                     headOfHousehold={household.head_of_household}
                   >
                     <Button
@@ -462,37 +496,119 @@ export function HouseholdsTable({
 
           {/* Location Filters */}
           <div className='flex gap-3'>
-            <Select value={provinceFilter} onValueChange={handleProvinceChange}>
-              <SelectTrigger className='focus:border-primary focus:ring-primary/20 w-[200px] border-slate-200 bg-white'>
-                <MapPin className='mr-2 h-4 w-4 text-slate-400' />
-                <SelectValue placeholder='Tỉnh/thành phố' />
-              </SelectTrigger>
-              <SelectContent>
-                {provinces.map((province) => (
-                  <SelectItem key={province.code} value={province.code}>
-                    {province.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={provinceOpen} onOpenChange={setProvinceOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant='outline'
+                  role='combobox'
+                  aria-expanded={provinceOpen}
+                  className='focus:border-primary focus:ring-primary/20 w-[200px] justify-between border-slate-200 bg-white'
+                >
+                  <div className='flex items-center truncate'>
+                    <MapPin className='mr-2 h-4 w-4 shrink-0 text-slate-400' />
+                    <span className='truncate'>
+                      {provinceFilter
+                        ? provinces.find((p) => p.code === provinceFilter)?.name
+                        : 'Tỉnh/thành phố'}
+                    </span>
+                  </div>
+                  <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className='w-[200px] p-0'>
+                <Command>
+                  <CommandInput placeholder='Tìm tỉnh/thành phố...' />
+                  <CommandList>
+                    <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                    <CommandGroup>
+                      {provinces.map((province) => (
+                        <CommandItem
+                          key={province.code}
+                          value={province.name}
+                          onSelect={() => {
+                            handleProvinceChange(
+                              province.code === provinceFilter
+                                ? ''
+                                : province.code
+                            );
+                            setProvinceOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              provinceFilter === province.code
+                                ? 'opacity-100'
+                                : 'opacity-0'
+                            }`}
+                          />
+                          {province.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
 
-            <Select
-              value={wardFilter}
-              onValueChange={handleWardChange}
-              disabled={!provinceFilter}
-            >
-              <SelectTrigger className='focus:border-primary focus:ring-primary/20 w-[200px] border-slate-200 bg-white'>
-                <MapPin className='mr-2 h-4 w-4 text-slate-400' />
-                <SelectValue placeholder='Phường/xã' />
-              </SelectTrigger>
-              <SelectContent>
-                {wards.map((ward) => (
-                  <SelectItem key={ward.code} value={ward.code}>
-                    {ward.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={wardOpen} onOpenChange={setWardOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant='outline'
+                  role='combobox'
+                  aria-expanded={wardOpen}
+                  disabled={!provinceFilter}
+                  className='focus:border-primary focus:ring-primary/20 w-[200px] justify-between border-slate-200 bg-white'
+                >
+                  <div className='flex items-center truncate'>
+                    <MapPin className='mr-2 h-4 w-4 shrink-0 text-slate-400' />
+                    <span className='truncate'>
+                      {wardFilter
+                        ? wards.find((w) => w.code === wardFilter)?.name
+                        : 'Phường/xã'}
+                    </span>
+                  </div>
+                  <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className='w-[200px] p-0'>
+                <Command>
+                  <CommandInput placeholder='Tìm phường/xã...' />
+                  <CommandList>
+                    <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                    <CommandGroup>
+                      {wards.map((ward) => (
+                        <CommandItem
+                          key={ward.code}
+                          value={ward.name}
+                          onSelect={() => {
+                            handleWardChange(
+                              ward.code === wardFilter ? '' : ward.code
+                            );
+                            setWardOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              wardFilter === ward.code
+                                ? 'opacity-100'
+                                : 'opacity-0'
+                            }`}
+                          />
+                          {ward.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            <CreateHouseholdDialog>
+              <Button className='bg-primary hover:bg-primary/90 cursor-pointer gap-2 px-4 shadow-sm'>
+                <Plus className='h-4 w-4' />
+                Thêm hộ gia đình
+              </Button>
+            </CreateHouseholdDialog>
           </div>
         </div>
 

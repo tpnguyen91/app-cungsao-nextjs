@@ -41,8 +41,8 @@ interface Household {
   id: string;
   household_name: string;
   address: string;
-  province_id?: string;
-  ward_id?: string;
+  province_code?: string;
+  ward_code?: string;
 }
 
 interface EditHouseholdDialogProps {
@@ -63,8 +63,8 @@ export function EditHouseholdDialog({
     defaultValues: {
       household_name: '',
       address: '',
-      province_id: '',
-      ward_id: ''
+      province_code: '',
+      ward_code: ''
     }
   });
 
@@ -74,16 +74,17 @@ export function EditHouseholdDialog({
       form.reset({
         household_name: household.household_name || '',
         address: household.address || '',
-        province_id: household.province_id || '',
-        ward_id: household.ward_id || ''
+        province_code: household.province_code || '',
+        ward_code: household.ward_code || ''
       });
     }
   }, [open, household, form]);
 
-  const selectedProvinceId = form.watch('province_id');
+  const selectedProvinceCode = form.watch('province_code');
   const wards = useMemo(
-    () => (selectedProvinceId ? getWardsByProvince(selectedProvinceId) : []),
-    [selectedProvinceId]
+    () =>
+      selectedProvinceCode ? getWardsByProvince(selectedProvinceCode) : [],
+    [selectedProvinceCode]
   );
 
   const onSubmit = async (data: HouseholdFormData) => {
@@ -130,7 +131,7 @@ export function EditHouseholdDialog({
             <div className='grid grid-cols-2 gap-3'>
               <FormField
                 control={form.control}
-                name='province_id'
+                name='province_code'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tỉnh/Thành phố</FormLabel>
@@ -138,7 +139,7 @@ export function EditHouseholdDialog({
                       value={field.value}
                       onValueChange={(value) => {
                         field.onChange(value);
-                        form.setValue('ward_id', '');
+                        form.setValue('ward_code', '');
                       }}
                     >
                       <FormControl>
@@ -165,14 +166,14 @@ export function EditHouseholdDialog({
 
               <FormField
                 control={form.control}
-                name='ward_id'
+                name='ward_code'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Phường/Xã</FormLabel>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      disabled={!selectedProvinceId}
+                      disabled={!selectedProvinceCode}
                     >
                       <FormControl>
                         <SelectTrigger className='cursor-pointer'>

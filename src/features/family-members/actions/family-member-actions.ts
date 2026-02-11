@@ -119,3 +119,77 @@ export async function getFamilyMembers(householdId: string) {
 
   return members;
 }
+
+export interface MemberSearchResult {
+  id: string;
+  full_name: string;
+  birth_year: number;
+  household_id: string;
+  household_address: string | null;
+  household_province_code: string | null;
+  household_ward_code: string | null;
+  hometown_address: string | null;
+  hometown_province_code: string | null;
+  hometown_ward_code: string | null;
+  is_head_of_household: boolean;
+  relationship_role: string;
+  gender: string | null;
+}
+
+export async function searchFamilyMembers(searchQuery: string) {
+  if (!searchQuery || searchQuery.trim().length < 2) {
+    return [];
+  }
+
+  const supabase = await createClient();
+
+  // Search members by name and join with household data
+  const { data: members, error } = await supabase
+    .from('family_members')
+    .select(
+      `
+      id,
+      full_name,
+      birth_year,
+      relationship_role,
+      gender,
+      is_head_of_household,
+      household_id,
+      hometown_address,
+      hometown_province_code,
+      hometown_ward_code,
+      households!family_members_household_id_fkey!inner(
+        address,
+        province_code,
+        ward_code
+      )
+    `
+    )
+    .ilike('full_name', `%${searchQuery.trim()}%`)
+    .limit(50);
+
+  if (error) {
+    console.error('Error searching members:', error);
+    throw new Error(`Không thể tìm kiếm thành viên: ${error.message}`);
+  }
+
+  // Transform the nested data structure
+  const results: MemberSearchResult[] =
+    members?.map((member: any) => ({
+      id: member.id,
+      full_name: member.full_name,
+      birth_year: member.birth_year,
+      household_id: member.household_id,
+      household_address: member.households?.address || null,
+      household_province_code: member.households?.province_code || null,
+      household_ward_code: member.households?.ward_code || null,
+      hometown_address: member.hometown_address,
+      hometown_province_code: member.hometown_province_code,
+      hometown_ward_code: member.hometown_ward_code,
+      is_head_of_household: member.is_head_of_household,
+      relationship_role: member.relationship_role,
+      gender: member.gender
+    })) || [];
+
+  return results;
+}

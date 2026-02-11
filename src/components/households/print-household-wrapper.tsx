@@ -13,6 +13,8 @@ interface PrintHouseholdWrapperProps {
   householdName: string;
   address: string;
   phone?: string;
+  province_code?: string;
+  ward_code?: string;
   headOfHousehold?: {
     id: string;
     full_name: string;
@@ -25,6 +27,8 @@ export function PrintHouseholdWrapper({
   householdName,
   address,
   phone,
+  province_code,
+  ward_code,
   headOfHousehold,
   children
 }: PrintHouseholdWrapperProps) {
@@ -62,6 +66,8 @@ export function PrintHouseholdWrapper({
     household_name: householdName,
     address,
     phone,
+    province_code,
+    ward_code,
     head_of_household: headOfHousehold
   };
 

@@ -9,12 +9,11 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { GENDER_LABELS } from '@/features/family-members/schemas/family-member-schema';
+import provincesData from '@/data/province.json';
+import wardsData from '@/data/ward.json';
 import { getCanChi, getSaoChieuMenh, getVanHan } from '@/lib/utils';
 import type { FamilyMember } from '@/types/database';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { MapPin, Phone, Printer, Users } from 'lucide-react';
+import { Printer } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
@@ -23,6 +22,8 @@ interface PrintHouseholdData {
   household_name?: string;
   address: string;
   phone?: string;
+  province_code?: string;
+  ward_code?: string;
   head_of_household?: {
     id: string;
     full_name: string;
@@ -47,15 +48,24 @@ export function PrintHouseholdMembers({
     return new Date().getFullYear() - birthYear;
   };
 
-  const formatPrintDate = () => {
-    return format(new Date(), "dd/MM/yyyy 'lúc' HH:mm", { locale: vi });
-  };
-
   const getHeadOfHousehold = () => {
     return (
       members.find((member) => member.is_head_of_household) ||
       household.head_of_household
     );
+  };
+
+  // Helper functions to get province/ward names by code
+  const getProvinceName = (code: string | undefined) => {
+    if (!code) return null;
+    const province = (provincesData as Record<string, { name: string }>)[code];
+    return province?.name || null;
+  };
+
+  const getWardName = (code: string | undefined) => {
+    if (!code) return null;
+    const ward = (wardsData as Record<string, { name: string }>)[code];
+    return ward?.name || null;
   };
 
   const sortedMembers = [...members].sort((a, b) => {
@@ -73,8 +83,8 @@ export function PrintHouseholdMembers({
     documentTitle: '', //`Danh-sach-thanh-vien-${household.household_name || 'gia-dinh'}-${format(new Date(), 'dd-MM-yyyy')}`,
     pageStyle: `
       @page {
-        size: A4 landscape;
-        margin: 15mm;
+        size: A4 portrait;
+        margin: 10mm;
       }
       
       @media print {
@@ -84,8 +94,13 @@ export function PrintHouseholdMembers({
         }
         
         .print-content {
+          width: 100% !important;
           padding: 0;
           margin: 0;
+        }
+        
+        table {
+          width: 100% !important;
         }
       }
     `
@@ -111,7 +126,7 @@ export function PrintHouseholdMembers({
 
         <DialogContent
           className='max-h-[90vh] overflow-y-scroll'
-          style={{ width: 950, maxWidth: '297mm' }}
+          style={{ width: 650, maxWidth: '210mm' }}
         >
           <DialogHeader className='print:hidden'>
             <DialogTitle className='flex items-center justify-between'>
@@ -125,115 +140,98 @@ export function PrintHouseholdMembers({
           {/* Print Content - Nội dung sẽ được in */}
           <div
             ref={printRef}
-            className='print-content rounded bg-white p-6'
-            style={{
-              // minHeight: '21cm',
-              width: 900
-            }}
+            className='print-content w-full rounded bg-white p-6'
           >
             {/* Header */}
-            <div className='mb-6 border-b-2 border-gray-800 pb-4'>
-              <h1 className='mb-4 text-center text-2xl font-bold uppercase'>
-                Danh sách thành viên gia đình - Cúng sao
+            <div className='mb-4 border-b-2 border-gray-800 pb-3'>
+              <h1 className='mb-3 text-center text-2xl font-bold tracking-wide uppercase'>
+                Sớ Cúng Sao
               </h1>
 
-              <div className='mb-4 grid grid-cols-2 gap-6'>
-                <div className='space-y-2'>
-                  <div className='flex items-center gap-2'>
-                    <Users className='h-4 w-4' />
+              <div className='space-y-1 text-sm'>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div className='flex items-center'>
                     <span className='font-semibold'>Chủ hộ:</span>
-                    <span>
+                    <span className='ml-1'>
                       {getHeadOfHousehold()?.full_name || 'Chưa xác định'}
                     </span>
                   </div>
-                  <div className='flex items-start gap-2'>
-                    <MapPin className='mt-0.5 h-4 w-4' />
-                    <span className='font-semibold'>Địa chỉ:</span>
-                    <span>{household.address}</span>
+                  <div className='flex items-center'>
+                    <span className='font-semibold'>SĐT:</span>
+                    <span className='ml-1'>{household.phone || '-'}</span>
                   </div>
                 </div>
-                <div className='space-y-2'>
-                  {household.phone && (
-                    <div className='flex flex-row items-center space-x-1'>
-                      <Phone className='h-4 w-4' />
-                      <span className='font-semibold'>Số điện thoại:</span>
-                      <span>{household.phone}</span>
-                    </div>
-                  )}
-                  <div className='flex flex-row items-center space-x-1'>
-                    <Users className='h-4 w-4' />
-                    <span className='font-semibold'>Tổng thành viên:</span>
-                    <Badge variant='secondary' className='ml-2'>
-                      {members.length} người
-                    </Badge>
-                  </div>
-                  <div className='flex flex-row items-center space-x-1 text-sm text-gray-600'>
-                    <span className='font-semibold'>Ngày in:</span>
-                    <span>{formatPrintDate()}</span>
-                  </div>
+                <div className='flex items-start'>
+                  <span className='font-semibold'>Địa chỉ:</span>
+                  <span className='ml-1'>
+                    {[
+                      household.address,
+                      getWardName(household.ward_code),
+                      getProvinceName(household.province_code)
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Table */}
             <div className='overflow-x-auto'>
-              <table className='w-full border-collapse border border-gray-800 text-sm'>
+              <table className='w-full border-collapse border border-gray-800 text-xs'>
                 <thead>
                   <tr className='bg-gray-100'>
-                    <th className='w-12 border border-gray-800 p-2 text-center font-bold'>
+                    <th className='w-8 border border-gray-800 p-1.5 text-center font-bold'>
                       STT
                     </th>
-                    <th className='w-36 border border-gray-800 p-2 text-center font-bold'>
+                    <th className='border border-gray-800 p-1.5 text-center font-bold'>
                       Họ và tên
                     </th>
-                    <th className='w-28 border border-gray-800 p-2 text-center font-bold'>
+                    <th className='border border-gray-800 p-1.5 text-center font-bold'>
                       Pháp danh
                     </th>
-                    <th className='w-20 border border-gray-800 p-2 text-center font-bold'>
+                    <th className='w-16 border border-gray-800 p-1.5 text-center font-bold'>
                       Tuổi
                     </th>
-                    <th className='w-24 border border-gray-800 p-2 text-center font-bold'>
+                    <th className='w-24 border border-gray-800 p-1.5 text-center font-bold'>
                       Sao chiếu mệnh
                     </th>
-                    <th className='w-20 border border-gray-800 p-2 text-center font-bold'>
+                    <th className='w-24 border border-gray-800 p-1.5 text-center font-bold'>
                       Vận hạn
-                    </th>
-                    <th className='w-16 border border-gray-800 p-2 text-center font-bold'>
-                      Giới tính
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedMembers.map((member, index) => (
                     <tr key={member.id}>
-                      <td className='border border-gray-800 p-2 text-center'>
+                      <td className='border border-gray-800 p-1.5 text-center'>
                         {index + 1}
                       </td>
-                      <td className='border border-gray-800 p-2'>
+                      <td className='border border-gray-800 p-1.5'>
                         <div className='font-medium'>{member.full_name}</div>
                         {member.is_head_of_household && (
                           <Badge
                             variant='secondary'
-                            className='mt-1 bg-blue-100 text-xs text-blue-800'
+                            className='mt-0.5 bg-blue-100 text-[10px] text-blue-800'
                           >
                             Chủ hộ
                           </Badge>
                         )}
                       </td>
-                      <td className='border border-gray-800 p-2 text-center'>
+                      <td className='border border-gray-800 p-1.5 text-center'>
                         {member.dharma_name || (
                           <span className='text-gray-500 italic'>-</span>
                         )}
                       </td>
-                      <td className='border border-gray-800 p-2 text-center'>
+                      <td className='border border-gray-800 p-1.5 text-center'>
                         <div className='font-medium'>
                           {calculateAge(member.birth_year)} tuổi
                         </div>
-                        <div className='text-xs text-gray-600'>
+                        <div className='text-[10px] text-gray-600'>
                           {getCanChi(member.birth_year)}
                         </div>
                       </td>
-                      <td className='border border-gray-800 p-2 text-center'>
+                      <td className='border border-gray-800 p-1.5 text-center'>
                         <span className='font-medium text-amber-700'>
                           {getSaoChieuMenh(
                             member.birth_year,
@@ -241,7 +239,7 @@ export function PrintHouseholdMembers({
                           )}
                         </span>
                       </td>
-                      <td className='border border-gray-800 p-2 text-center'>
+                      <td className='border border-gray-800 p-1.5 text-center'>
                         <span className='font-medium text-purple-700'>
                           {
                             getVanHan(
@@ -250,13 +248,6 @@ export function PrintHouseholdMembers({
                             ).han
                           }
                         </span>
-                      </td>
-                      <td className='border border-gray-800 p-2 text-center'>
-                        <Badge variant='outline' className='text-xs'>
-                          {GENDER_LABELS[
-                            member.gender as keyof typeof GENDER_LABELS
-                          ] || member.gender}
-                        </Badge>
                       </td>
                     </tr>
                   ))}

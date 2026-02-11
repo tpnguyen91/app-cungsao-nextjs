@@ -9,8 +9,8 @@ export const householdSchema = z.object({
     .string()
     .min(5, 'Địa chỉ phải có ít nhất 5 ký tự')
     .max(500, 'Địa chỉ không được quá 500 ký tự'),
-  province_id: z.string().min(1, 'Vui lòng chọn tỉnh/thành phố').optional(),
-  ward_id: z.string().min(1, 'Vui lòng chọn phường/xã').optional()
+  province_code: z.string().min(1, 'Vui lòng chọn tỉnh/thành phố').optional(),
+  ward_code: z.string().min(1, 'Vui lòng chọn phường/xã').optional()
 });
 
 export type HouseholdFormData = z.infer<typeof householdSchema>;

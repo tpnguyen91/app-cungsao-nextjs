@@ -252,7 +252,7 @@ export function CreateHouseholdWizard({
               </div>
 
               <div className='grid grid-cols-2 gap-3'>
-                <div>
+                <div className='w-full'>
                   <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Tỉnh/Thành phố <span className='text-red-500'>*</span>
                   </label>
@@ -264,7 +264,7 @@ export function CreateHouseholdWizard({
                     }}
                   >
                     <SelectTrigger
-                      className={`cursor-pointer border-slate-200 ${householdForm.formState.errors.province_code ? 'border-red-400' : ''}`}
+                      className={`w-full cursor-pointer border-slate-200 ${householdForm.formState.errors.province_code ? 'border-red-400' : ''}`}
                     >
                       <SelectValue placeholder='Chọn tỉnh/thành phố' />
                     </SelectTrigger>
@@ -281,7 +281,7 @@ export function CreateHouseholdWizard({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                <div className='w-full'>
                   <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Phường/Xã <span className='text-red-500'>*</span>
                   </label>
@@ -293,7 +293,7 @@ export function CreateHouseholdWizard({
                     disabled={!householdForm.watch('province_code')}
                   >
                     <SelectTrigger
-                      className={`cursor-pointer border-slate-200 ${householdForm.formState.errors.ward_code ? 'border-red-400' : ''}`}
+                      className={`w-full cursor-pointer border-slate-200 ${householdForm.formState.errors.ward_code ? 'border-red-400' : ''}`}
                     >
                       <SelectValue placeholder='Chọn phường/xã' />
                     </SelectTrigger>
