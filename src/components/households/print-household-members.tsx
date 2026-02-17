@@ -45,7 +45,7 @@ export function PrintHouseholdMembers({
   const printRef = useRef<HTMLDivElement>(null);
 
   const calculateAge = (birthYear: number) => {
-    return new Date().getFullYear() - birthYear;
+    return new Date().getFullYear() - birthYear + 1;
   };
 
   const getHeadOfHousehold = () => {

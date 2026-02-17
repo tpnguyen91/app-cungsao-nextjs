@@ -67,7 +67,7 @@ export function InlineFamilyMembersTable({
 
   // Calculate age from birth year
   const calculateAge = (birthYear: number) => {
-    return new Date().getFullYear() - birthYear;
+    return new Date().getFullYear() - birthYear + 1;
   };
 
   // Open modal for adding new member
