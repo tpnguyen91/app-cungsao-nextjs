@@ -97,7 +97,8 @@ export function getSaoChieuMenh(birthYear: number, gender: string): string {
   if (du === 0) du = 9;
 
   // Lấy sao chiếu mệnh
-  const result = gender === 'nam' ? saoNam[du - 1] : saoNu[du - 1];
+  const result =
+    gender.toLowerCase() === 'nam' ? saoNam[du - 1] : saoNu[du - 1];
   return result || '';
 }
 
@@ -144,7 +145,7 @@ export function getVanHan(birthYear: number, gender: string) {
   // --- Sao chiếu mệnh ---
   let du9 = tuoiMu % 9;
   if (du9 === 0) du9 = 9;
-  const sao = gender === 'nam' ? saoNam[du9 - 1] : saoNu[du9 - 1];
+  const sao = gender.toLowerCase() === 'nam' ? saoNam[du9 - 1] : saoNu[du9 - 1];
 
   // --- Hạn 8 năm ---
   let du8 = tuoiMu % 8;
