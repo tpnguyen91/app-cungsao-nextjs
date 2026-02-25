@@ -67,15 +67,14 @@ export function PrintHouseholdMembers({
     const ward = (wardsData as Record<string, { name: string }>)[code];
     return ward?.name || null;
   };
-
-  const sortedMembers = [...members].sort((a, b) => {
-    // Chủ hộ luôn đứng đầu
-    if (a.is_head_of_household && !b.is_head_of_household) return -1;
-    if (!a.is_head_of_household && b.is_head_of_household) return 1;
-
-    // Sắp xếp theo tuổi giảm dần
-    return b.birth_year - a.birth_year;
-  });
+  const sortedMembers = [...members]
+    .sort((a, b) => a.birth_year - b.birth_year) // Sắp xếp theo tuổi giảm dần trước (birth_year nhỏ = già hơn)
+    .sort((a, b) => {
+      // Sau đó đưa chủ hộ lên đầu (giữ nguyên thứ tự tuổi)
+      if (a.is_head_of_household && !b.is_head_of_household) return -1;
+      if (!a.is_head_of_household && b.is_head_of_household) return 1;
+      return 0;
+    });
 
   // Cấu hình react-to-print (API mới)
   const handlePrint = useReactToPrint({

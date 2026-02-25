@@ -3,6 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
+} from '@/components/ui/command';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -10,12 +18,10 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { createHouseholdWithHead } from '@/lib/household-operations-fixed';
@@ -23,7 +29,14 @@ import { getProvinces, getWardsByProvince } from '@/lib/vietnam-data';
 import type { FamilyMember, Household } from '@/types/household';
 import { Gender } from '@/types/household';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight, Check, Home, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronsUpDown,
+  Home,
+  Loader2
+} from 'lucide-react';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -77,6 +90,12 @@ export function CreateHouseholdWizard({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useSameAddress, setUseSameAddress] = useState(true);
+
+  // State for managing popover open/close
+  const [householdProvinceOpen, setHouseholdProvinceOpen] = useState(false);
+  const [householdWardOpen, setHouseholdWardOpen] = useState(false);
+  const [headProvinceOpen, setHeadProvinceOpen] = useState(false);
+  const [headWardOpen, setHeadWardOpen] = useState(false);
 
   const { toast } = useToast();
 
@@ -256,59 +275,126 @@ export function CreateHouseholdWizard({
                   <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Tỉnh/Thành phố <span className='text-red-500'>*</span>
                   </label>
-                  <Select
-                    value={householdForm.watch('province_code')}
-                    onValueChange={(v) => {
-                      householdForm.setValue('province_code', v);
-                      householdForm.setValue('ward_code', '');
-                    }}
+                  <Popover
+                    open={householdProvinceOpen}
+                    onOpenChange={setHouseholdProvinceOpen}
                   >
-                    <SelectTrigger
-                      className={`w-full cursor-pointer border-slate-200 ${householdForm.formState.errors.province_code ? 'border-red-400' : ''}`}
-                    >
-                      <SelectValue placeholder='Chọn tỉnh/thành phố' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {provinces.map((p) => (
-                        <SelectItem
-                          key={p.code}
-                          value={p.code}
-                          className='cursor-pointer'
-                        >
-                          {p.name_with_type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant='outline'
+                        role='combobox'
+                        aria-expanded={householdProvinceOpen}
+                        className={`w-full justify-between border-slate-200 font-normal ${householdForm.formState.errors.province_code ? 'border-red-400' : ''}`}
+                      >
+                        <span className='truncate'>
+                          {householdForm.watch('province_code')
+                            ? provinces.find(
+                                (p) =>
+                                  p.code ===
+                                  householdForm.watch('province_code')
+                              )?.name_with_type
+                            : 'Chọn tỉnh/thành phố'}
+                        </span>
+                        <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-[300px] p-0'>
+                      <Command>
+                        <CommandInput placeholder='Tìm tỉnh/thành phố...' />
+                        <CommandList>
+                          <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                          <CommandGroup>
+                            {provinces.map((province) => (
+                              <CommandItem
+                                key={province.code}
+                                value={province.name_with_type}
+                                onSelect={() => {
+                                  householdForm.setValue(
+                                    'province_code',
+                                    province.code
+                                  );
+                                  householdForm.setValue('ward_code', '');
+                                  setHouseholdProvinceOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={`mr-2 h-4 w-4 ${
+                                    householdForm.watch('province_code') ===
+                                    province.code
+                                      ? 'opacity-100'
+                                      : 'opacity-0'
+                                  }`}
+                                />
+                                {province.name_with_type}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className='w-full'>
                   <label className='mb-1.5 block text-sm font-medium text-slate-700'>
                     Phường/Xã <span className='text-red-500'>*</span>
                   </label>
-                  <Select
-                    value={householdForm.watch('ward_code')}
-                    onValueChange={(v) =>
-                      householdForm.setValue('ward_code', v)
-                    }
-                    disabled={!householdForm.watch('province_code')}
+                  <Popover
+                    open={householdWardOpen}
+                    onOpenChange={setHouseholdWardOpen}
                   >
-                    <SelectTrigger
-                      className={`w-full cursor-pointer border-slate-200 ${householdForm.formState.errors.ward_code ? 'border-red-400' : ''}`}
-                    >
-                      <SelectValue placeholder='Chọn phường/xã' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {householdWards.map((w) => (
-                        <SelectItem
-                          key={w.code}
-                          value={w.code}
-                          className='cursor-pointer'
-                        >
-                          {w.name_with_type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant='outline'
+                        role='combobox'
+                        aria-expanded={householdWardOpen}
+                        disabled={!householdForm.watch('province_code')}
+                        className={`w-full justify-between border-slate-200 font-normal ${householdForm.formState.errors.ward_code ? 'border-red-400' : ''}`}
+                      >
+                        <span className='truncate'>
+                          {householdForm.watch('ward_code')
+                            ? householdWards.find(
+                                (w) =>
+                                  w.code === householdForm.watch('ward_code')
+                              )?.name_with_type
+                            : 'Chọn phường/xã'}
+                        </span>
+                        <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-[300px] p-0'>
+                      <Command>
+                        <CommandInput placeholder='Tìm phường/xã...' />
+                        <CommandList>
+                          <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                          <CommandGroup>
+                            {householdWards.map((ward) => (
+                              <CommandItem
+                                key={ward.code}
+                                value={ward.name_with_type}
+                                onSelect={() => {
+                                  householdForm.setValue(
+                                    'ward_code',
+                                    ward.code
+                                  );
+                                  setHouseholdWardOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={`mr-2 h-4 w-4 ${
+                                    householdForm.watch('ward_code') ===
+                                    ward.code
+                                      ? 'opacity-100'
+                                      : 'opacity-0'
+                                  }`}
+                                />
+                                {ward.name_with_type}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
@@ -464,50 +550,126 @@ export function CreateHouseholdWizard({
                       className='border-slate-200 bg-white'
                     />
                     <div className='grid grid-cols-2 gap-3'>
-                      <Select
-                        value={headForm.watch('hometown_province_code')}
-                        onValueChange={(v) => {
-                          headForm.setValue('hometown_province_code', v);
-                          headForm.setValue('hometown_ward_code', '');
-                        }}
+                      <Popover
+                        open={headProvinceOpen}
+                        onOpenChange={setHeadProvinceOpen}
                       >
-                        <SelectTrigger className='cursor-pointer border-slate-200 bg-white'>
-                          <SelectValue placeholder='Tỉnh/TP' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provinces.map((p) => (
-                            <SelectItem
-                              key={p.code}
-                              value={p.code}
-                              className='cursor-pointer'
-                            >
-                              {p.name_with_type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={headForm.watch('hometown_ward_code')}
-                        onValueChange={(v) =>
-                          headForm.setValue('hometown_ward_code', v)
-                        }
-                        disabled={!headForm.watch('hometown_province_code')}
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant='outline'
+                            role='combobox'
+                            aria-expanded={headProvinceOpen}
+                            className='w-full justify-between border-slate-200 bg-white font-normal'
+                          >
+                            <span className='truncate'>
+                              {headForm.watch('hometown_province_code')
+                                ? provinces.find(
+                                    (p) =>
+                                      p.code ===
+                                      headForm.watch('hometown_province_code')
+                                  )?.name_with_type
+                                : 'Tỉnh/TP'}
+                            </span>
+                            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-[280px] p-0'>
+                          <Command>
+                            <CommandInput placeholder='Tìm tỉnh/thành phố...' />
+                            <CommandList>
+                              <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                              <CommandGroup>
+                                {provinces.map((province) => (
+                                  <CommandItem
+                                    key={province.code}
+                                    value={province.name_with_type}
+                                    onSelect={() => {
+                                      headForm.setValue(
+                                        'hometown_province_code',
+                                        province.code
+                                      );
+                                      headForm.setValue(
+                                        'hometown_ward_code',
+                                        ''
+                                      );
+                                      setHeadProvinceOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={`mr-2 h-4 w-4 ${
+                                        headForm.watch(
+                                          'hometown_province_code'
+                                        ) === province.code
+                                          ? 'opacity-100'
+                                          : 'opacity-0'
+                                      }`}
+                                    />
+                                    {province.name_with_type}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <Popover
+                        open={headWardOpen}
+                        onOpenChange={setHeadWardOpen}
                       >
-                        <SelectTrigger className='cursor-pointer border-slate-200 bg-white'>
-                          <SelectValue placeholder='Phường/Xã' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {headWards.map((w) => (
-                            <SelectItem
-                              key={w.code}
-                              value={w.code}
-                              className='cursor-pointer'
-                            >
-                              {w.name_with_type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant='outline'
+                            role='combobox'
+                            aria-expanded={headWardOpen}
+                            disabled={!headForm.watch('hometown_province_code')}
+                            className='w-full justify-between border-slate-200 bg-white font-normal'
+                          >
+                            <span className='truncate'>
+                              {headForm.watch('hometown_ward_code')
+                                ? headWards.find(
+                                    (w) =>
+                                      w.code ===
+                                      headForm.watch('hometown_ward_code')
+                                  )?.name_with_type
+                                : 'Phường/Xã'}
+                            </span>
+                            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className='w-[280px] p-0'>
+                          <Command>
+                            <CommandInput placeholder='Tìm phường/xã...' />
+                            <CommandList>
+                              <CommandEmpty>Không tìm thấy.</CommandEmpty>
+                              <CommandGroup>
+                                {headWards.map((ward) => (
+                                  <CommandItem
+                                    key={ward.code}
+                                    value={ward.name_with_type}
+                                    onSelect={() => {
+                                      headForm.setValue(
+                                        'hometown_ward_code',
+                                        ward.code
+                                      );
+                                      setHeadWardOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={`mr-2 h-4 w-4 ${
+                                        headForm.watch('hometown_ward_code') ===
+                                        ward.code
+                                          ? 'opacity-100'
+                                          : 'opacity-0'
+                                      }`}
+                                    />
+                                    {ward.name_with_type}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 )}

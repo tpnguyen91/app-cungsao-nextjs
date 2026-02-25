@@ -17,6 +17,11 @@ export default async function HouseholdsPage({
   const params = await searchParams;
   const supabase = await createClient();
 
+  // Get user data
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
   // Extract and parse search parameters
   const searchText = params.search || '';
   const provinceFilter = params.province || '';
@@ -118,6 +123,7 @@ export default async function HouseholdsPage({
       searchText={searchText}
       provinceFilter={provinceFilter}
       wardFilter={wardFilter}
+      userEmail={user?.email || ''}
     />
   );
 }

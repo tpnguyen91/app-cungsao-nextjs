@@ -4,7 +4,7 @@ import { HouseholdsTable } from '@/components/households/households-table';
 import { LogoutButton } from '@/components/layout/logout-button';
 import { MemberSearchModal } from '@/components/family-members/member-search-modal';
 import { Button } from '@/components/ui/button';
-import { Home, Search } from 'lucide-react';
+import { Home, Search, User } from 'lucide-react';
 import { useState } from 'react';
 import { useHouseholdDrawer } from '@/hooks/use-household-drawer';
 
@@ -16,6 +16,7 @@ interface HouseholdsPageContentProps {
   searchText: string;
   provinceFilter: string;
   wardFilter: string;
+  userEmail: string;
 }
 
 export function HouseholdsPageContent({
@@ -25,7 +26,8 @@ export function HouseholdsPageContent({
   pageSize,
   searchText,
   provinceFilter,
-  wardFilter
+  wardFilter,
+  userEmail
 }: HouseholdsPageContentProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { openHousehold } = useHouseholdDrawer();
@@ -49,7 +51,17 @@ export function HouseholdsPageContent({
             </div>
           </div>
 
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-3'>
+            {/* User Email Display */}
+            <div className='flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 shadow-sm transition-colors duration-200 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600'>
+              <div className='flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600'>
+                <User className='h-3.5 w-3.5 text-white' />
+              </div>
+              <span className='text-sm font-medium text-slate-700 dark:text-slate-200'>
+                {userEmail}
+              </span>
+            </div>
+
             <Button
               onClick={() => setIsSearchOpen(true)}
               variant='outline'
