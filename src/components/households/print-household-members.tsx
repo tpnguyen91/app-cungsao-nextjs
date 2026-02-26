@@ -1,6 +1,5 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -82,7 +81,7 @@ export function PrintHouseholdMembers({
     documentTitle: '', //`Danh-sach-thanh-vien-${household.household_name || 'gia-dinh'}-${format(new Date(), 'dd-MM-yyyy')}`,
     pageStyle: `
       @page {
-        size: A4 portrait;
+        size: A4 landscape;
         margin: 10mm;
       }
       
@@ -100,6 +99,7 @@ export function PrintHouseholdMembers({
         
         table {
           width: 100% !important;
+          font-size: 18px !important;
         }
       }
     `
@@ -143,11 +143,11 @@ export function PrintHouseholdMembers({
           >
             {/* Header */}
             <div className='mb-4 border-b-2 border-gray-800 pb-3'>
-              <h1 className='mb-3 text-center text-2xl font-bold tracking-wide uppercase'>
+              <h1 className='mb-3 text-center text-[27px] font-bold tracking-wide uppercase'>
                 Sớ Cúng Sao
               </h1>
 
-              <div className='space-y-1 text-sm'>
+              <div className='space-y-1 text-[17px]'>
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='flex items-center'>
                     <span className='font-semibold'>Chủ hộ:</span>
@@ -177,26 +177,29 @@ export function PrintHouseholdMembers({
 
             {/* Table */}
             <div className='overflow-x-auto'>
-              <table className='w-full border-collapse border border-gray-800 text-xs'>
+              <table className='w-full border-collapse border border-gray-800 text-[15px]'>
                 <thead>
                   <tr className='bg-gray-100'>
                     <th className='w-8 border border-gray-800 p-1.5 text-center font-bold'>
                       STT
                     </th>
-                    <th className='border border-gray-800 p-1.5 text-center font-bold'>
+                    <th className='w-[25%] border border-gray-800 p-1.5 text-center font-bold'>
                       Họ và tên
                     </th>
-                    <th className='border border-gray-800 p-1.5 text-center font-bold'>
+                    <th className='w-[15%] border border-gray-800 p-1.5 text-center font-bold'>
                       Pháp danh
+                    </th>
+                    <th className='w-16 border border-gray-800 p-1.5 text-center font-bold'>
+                      Năm sinh
                     </th>
                     <th className='w-16 border border-gray-800 p-1.5 text-center font-bold'>
                       Tuổi
                     </th>
                     <th className='w-24 border border-gray-800 p-1.5 text-center font-bold'>
-                      Sao chiếu mệnh
+                      Sao
                     </th>
                     <th className='w-24 border border-gray-800 p-1.5 text-center font-bold'>
-                      Vận hạn
+                      Hạn
                     </th>
                   </tr>
                 </thead>
@@ -206,28 +209,22 @@ export function PrintHouseholdMembers({
                       <td className='border border-gray-800 p-1.5 text-center'>
                         {index + 1}
                       </td>
-                      <td className='border border-gray-800 p-1.5'>
+                      <td className='w-[25%] border border-gray-800 p-1.5'>
                         <div className='font-medium'>{member.full_name}</div>
-                        {member.is_head_of_household && (
-                          <Badge
-                            variant='secondary'
-                            className='mt-0.5 bg-blue-100 text-[10px] text-blue-800'
-                          >
-                            Chủ hộ
-                          </Badge>
-                        )}
                       </td>
-                      <td className='border border-gray-800 p-1.5 text-center'>
+                      <td className='w-[15%] border border-gray-800 p-1.5 text-center'>
                         {member.dharma_name || (
                           <span className='text-gray-500 italic'>-</span>
                         )}
                       </td>
                       <td className='border border-gray-800 p-1.5 text-center'>
                         <div className='font-medium'>
-                          {calculateAge(member.birth_year)} tuổi
-                        </div>
-                        <div className='text-[10px] text-gray-600'>
                           {getCanChi(member.birth_year)}
+                        </div>
+                      </td>
+                      <td className='border border-gray-800 p-1.5 text-center'>
+                        <div className='font-medium'>
+                          {calculateAge(member.birth_year)} tuổi
                         </div>
                       </td>
                       <td className='border border-gray-800 p-1.5 text-center'>
